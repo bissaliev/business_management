@@ -9,6 +9,9 @@ class Setting(BaseSettings):
     POSTGRES_DB: str
     DB_HOST: str
     DB_PORT: str
+    SECRET_KEY: str
+    ALGORITHM: str
+    ACCESS_TOKEN_EXPIRE_MINUTES: int
 
     model_config = SettingsConfigDict(env_file=".env")
 
