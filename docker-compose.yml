@@ -1,0 +1,28 @@
+services:
+    auth_db:
+        image: postgres
+        ports:
+            - "5432:5432"
+        env_file:
+            - auth_service/.env
+
+    auth_service:
+      build: ./auth_service
+      env_file:
+        - ./auth_service/.env
+      ports:
+        - "8001:8001"
+
+    team_db:
+        image: postgres
+        ports:
+            - "5433:5432"
+        env_file:
+            - teams_service/.env
+
+    teams_service:
+      build: ./teams_service
+      env_file:
+        - ./teams_service/.env
+      ports:
+        - "8080:8080"
