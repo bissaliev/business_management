@@ -1,0 +1,26 @@
+from fastapi import APIRouter, HTTPException
+
+from app.routers.dependencies import TeamServiceDeps
+from app.schemas.teams import AddEmployee, TeamCreate, TeamResponse
+
+router = APIRouter()
+
+
+@router.post("/teams/")
+async def create_team(team_service: TeamServiceDeps, team_data: TeamCreate) -> TeamResponse:
+    team = await team_service.create_team(team_data.model_dump())
+    return team
+
+
+@router.get("/by-code/{team_code}")
+async def get_team_by_code(team_service: TeamServiceDeps, team_code: str) -> TeamResponse:
+    team = await team_service.get_team_by_code(team_code)
+    if not team:
+        raise HTTPException(status_code=404, detail="Team not found")
+    return team
+
+
+@router.post("/{team_id}/add_employee")
+async def add_employee(team_service: TeamServiceDeps, team_id: int, employee_data: AddEmployee) -> dict[str, str]:
+    await team_service.add_employee(team_id, **employee_data.model_dump(exclude_unset=True))
+    return {"message": "Сотрудник добавлен"}
