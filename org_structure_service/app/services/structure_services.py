@@ -51,6 +51,7 @@ class OrgStructureService:
         hierarchy = self.build_hierarchy(departments, divisions, employees, extra_managers, structure_type)
         return {"structure_type": structure_type, "hierarchy": hierarchy}
 
+    # Обновлённая функция build_hierarchy
     def build_hierarchy(
         self,
         departments: list[dict],
@@ -60,29 +61,34 @@ class OrgStructureService:
         structure_type: str,
     ) -> dict:
         """Вспомогательная функция для построения иерархии"""
-        div_map = {div["id"]: {"name": div["name"], "departments": []} for div in divisions}
+        # Карта отделов
         dept_map = {
-            dept["id"]: {"name": dept["name"], "division_id": dept["division_id"], "children": [], "employees": []}
+            dept["id"]: {
+                "id": dept["id"],
+                "name": dept["name"],
+                "division_id": dept["division_id"],
+                "children": [],
+                "employees": [],
+            }
             for dept in departments
         }
-        emp_map = {
-            emp["id"]: {
-                "employee_id": emp["employee_id"],
-                "role": emp["role"],
-                "managers": [emp["manager_id"]] if emp["manager_id"] else [],
-            }
-            for emp in employees
-        }
 
-        for mgr in extra_managers:
-            if mgr["emp_id"] in emp_map:
-                emp_map[mgr["emp_id"]]["managers"].append({"manager_id": mgr["manager_id"], "context": mgr["context"]})
+        # Карта дивизионов (для дивизионной структуры)
+        div_map = {div["id"]: {"id": div["id"], "name": div["name"], "departments": []} for div in divisions}
 
+        # Привязка сотрудников к отделам
         for emp in employees:
             dept_id = emp["dept_id"]
             if dept_id in dept_map:
-                dept_map[dept_id]["employees"].append(emp_map[emp["id"]])
+                emp_data = {"employee_id": emp["employee_id"], "role": emp["role"], "managers": []}
+                if emp["manager_id"]:
+                    emp_data["managers"].append(emp["manager_id"])
+                for mgr in extra_managers:
+                    if mgr["emp_id"] == emp["id"]:
+                        emp_data["managers"].append({"manager_id": mgr["manager_id"], "context": mgr["context"]})
+                dept_map[dept_id]["employees"].append(emp_data)
 
+        # Построение дерева отделов
         root_depts = []
         for dept in departments:
             parent_id = dept["parent_id"]
@@ -94,6 +100,7 @@ class OrgStructureService:
                 if parent_id in dept_map:
                     dept_map[parent_id]["children"].append(dept_map[dept["id"]])
 
+        # Возвращаем результат в зависимости от типа структуры
         if structure_type == "divisional":
-            return {"divisions": list(div_map.values()), "employees": emp_map}
-        return {"departments": root_depts if structure_type != "matrix" else dept_map, "employees": emp_map}
+            return {"divisions": list(div_map.values())}
+        return {"departments": root_depts}  # Всегда список, даже для матричной структуры
