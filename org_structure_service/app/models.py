@@ -11,6 +11,8 @@ class StructureType(str, Enum):
     LINEAR = "Линейная"
     FUNCTIONAL = "Функциональная"
     MATRIX = "Матричная"
+    DIVISIONAL = "Дивизиональная"
+    LINEAR_FUNCTIONAL = "Линейно-функциональная"
 
 
 class TeamStructure(Base):
@@ -21,7 +23,18 @@ class TeamStructure(Base):
     team_id: Mapped[int] = mapped_column(Integer, primary_key=True)
     structure_type: Mapped[StructureType] = mapped_column(String, default=StructureType.LINEAR)
 
+    divisions: Mapped[list["Division"]] = relationship("Division", back_populates="team_structure")
     departments: Mapped[list["Department"]] = relationship("Department", back_populates="team_structure")
+
+
+class Division(Base):
+    __tablename__ = "divisions"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    team_id: Mapped[int] = mapped_column(ForeignKey("team_structure.team_id"), nullable=False)
+    name: Mapped[str] = mapped_column(String(255), nullable=False)
+
+    team_structure: Mapped["TeamStructure"] = relationship("TeamStructure", back_populates="divisions")
+    departments: Mapped[list["Department"]] = relationship("Department", back_populates="division")
 
 
 class Department(Base):
@@ -31,10 +44,12 @@ class Department(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     team_id: Mapped[int] = mapped_column(ForeignKey("team_structure.team_id"), nullable=False)
+    division_id: Mapped[Optional[int]] = mapped_column(ForeignKey("divisions.id"), nullable=True)
     name: Mapped[str] = mapped_column(String, nullable=False)
     parent_department_id: Mapped[Optional[int]] = mapped_column(ForeignKey("departments.id"), nullable=True)
 
     team_structure: Mapped["TeamStructure"] = relationship("TeamStructure", back_populates="departments")
+    division: Mapped[Optional["Division"]] = relationship("Division", back_populates="departments")
     parent_department: Mapped[Optional["Department"]] = relationship(
         "Department", remote_side=[id], back_populates="children"
     )
@@ -48,7 +63,7 @@ class EmployeeStructure(Base):
     __tablename__ = "employee_structure"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    user_id: Mapped[int] = mapped_column(Integer, nullable=False)  # Ссылка на User Service
+    employee_id: Mapped[int] = mapped_column(Integer, nullable=False)  # Ссылка на User Service
     department_id: Mapped[Optional[int]] = mapped_column(ForeignKey("departments.id"), nullable=True)
     role: Mapped[str] = mapped_column(String, nullable=False)
     manager_id: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)  # Основной руководитель
