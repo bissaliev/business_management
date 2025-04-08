@@ -5,7 +5,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_session
-from app.models import Department, EmployeeManagers, EmployeeStructure, TeamStructure
+from app.models import Department, Division, EmployeeManagers, EmployeeStructure, TeamStructure
 from app.schemas import DepartmentCreate, EmployeeManagerCreate, EmployeeStructureCreate, TeamStructureCreate
 
 router = APIRouter()
@@ -39,7 +39,7 @@ async def add_employee_to_structure(
     structure: EmployeeStructureCreate, session: Annotated[AsyncSession, Depends(get_session)]
 ) -> dict:
     db_emp = EmployeeStructure(
-        user_id=structure.user_id,
+        employee_id=structure.employee_id,
         department_id=structure.department_id,
         role=structure.role,
         manager_id=structure.manager_id,
@@ -47,7 +47,7 @@ async def add_employee_to_structure(
     session.add(db_emp)
     await session.commit()
     await session.refresh(db_emp)
-    return {"id": db_emp.id, "user_id": db_emp.user_id}
+    return {"id": db_emp.id, "employee_id": db_emp.employee_id}
 
 
 @router.post("/employee-managers/", summary="Добавление дополнительного руководителя")
@@ -62,25 +62,28 @@ async def add_employee_manager(
     return {"message": "Manager added"}
 
 
-@router.get("/structure/{team_id}", response_model=dict, summary="Получение иерархии")
-async def get_team_structure(team_id: int, session: Annotated[AsyncSession, Depends(get_session)]):
-    # Тип структуры
+@router.get("/structure/{team_id}", summary="Получение иерархии")
+async def get_team_structure(team_id: int, session: Annotated[AsyncSession, Depends(get_session)]) -> dict:
     result = await session.execute(select(TeamStructure).where(TeamStructure.team_id == team_id))
     structure = result.scalar_one_or_none()
     structure_type = structure.structure_type if structure else "linear"
 
-    # Отделы
-    result = await session.execute(Department.__table__.select().where(Department.team_id == team_id))
-    departments = [{"id": row.id, "name": row.name, "parent_id": row.parent_department_id} for row in result]
+    result = await session.execute(Division.__table__.select().where(Division.team_id == team_id))
+    divisions = [{"id": row.id, "name": row.name} for row in result]
 
-    # Сотрудники
+    result = await session.execute(Department.__table__.select().where(Department.team_id == team_id))
+    departments = [
+        {"id": row.id, "name": row.name, "parent_id": row.parent_department_id, "division_id": row.division_id}
+        for row in result
+    ]
+
     result = await session.execute(
         EmployeeStructure.__table__.select().where(EmployeeStructure.department_id.in_([d["id"] for d in departments]))
     )
     employees = [
         {
             "id": row.id,
-            "user_id": row.user_id,
+            "employee_id": row.employee_id,
             "dept_id": row.department_id,
             "role": row.role,
             "manager_id": row.manager_id,
@@ -88,7 +91,6 @@ async def get_team_structure(team_id: int, session: Annotated[AsyncSession, Depe
         for row in result
     ]
 
-    # Дополнительные руководители
     result = await session.execute(
         EmployeeManagers.__table__.select().where(
             EmployeeManagers.employee_structure_id.in_([e["id"] for e in employees])
@@ -98,19 +100,26 @@ async def get_team_structure(team_id: int, session: Annotated[AsyncSession, Depe
         {"emp_id": row.employee_structure_id, "manager_id": row.manager_id, "context": row.context} for row in result
     ]
 
-    # Построение иерархии
-    hierarchy = build_hierarchy(departments, employees, extra_managers, structure_type)
+    hierarchy = build_hierarchy(departments, divisions, employees, extra_managers, structure_type)
     return {"structure_type": structure_type, "hierarchy": hierarchy}
 
 
 def build_hierarchy(
-    departments: list[dict], employees: list[dict], extra_managers: list[dict], structure_type: str
+    departments: list[dict],
+    divisions: list[dict],
+    employees: list[dict],
+    extra_managers: list[dict],
+    structure_type: str,
 ) -> dict:
     """Вспомогательная функция для построения иерархии"""
-    dept_map = {dept["id"]: {"name": dept["name"], "children": [], "employees": []} for dept in departments}
+    div_map = {div["id"]: {"name": div["name"], "departments": []} for div in divisions}
+    dept_map = {
+        dept["id"]: {"name": dept["name"], "division_id": dept["division_id"], "children": [], "employees": []}
+        for dept in departments
+    }
     emp_map = {
         emp["id"]: {
-            "user_id": emp["user_id"],
+            "employee_id": emp["employee_id"],
             "role": emp["role"],
             "managers": [emp["manager_id"]] if emp["manager_id"] else [],
         }
@@ -129,10 +138,14 @@ def build_hierarchy(
     root_depts = []
     for dept in departments:
         parent_id = dept["parent_id"]
-        if parent_id is None:
+        if structure_type == "divisional" and dept["division_id"]:
+            div_map[dept["division_id"]]["departments"].append(dept_map[dept["id"]])
+        elif parent_id is None:
             root_depts.append(dept_map[dept["id"]])
         else:
             if parent_id in dept_map:
                 dept_map[parent_id]["children"].append(dept_map[dept["id"]])
 
+    if structure_type == "divisional":
+        return {"divisions": list(div_map.values()), "employees": emp_map}
     return {"departments": root_depts if structure_type != "matrix" else dept_map, "employees": emp_map}
