@@ -4,7 +4,7 @@ from sqlalchemy import insert, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import settings
-from app.models.teams import Team, UserTeam
+from app.models.teams import Team, TeamEmployee
 
 
 class TeamService:
@@ -33,10 +33,20 @@ class TeamService:
                 raise HTTPException(status_code=400, detail=f"Пользователь с таким user_id={user_id} не существует")
         return response.json()
 
+    async def employee_exists(self, employee_id: int):
+        async with httpx.AsyncClient() as client:
+            url = f"{settings.USER_HOST}/{settings.USER_PORT}/users/{employee_id}"
+            response = await client.get(url)
+            if response.status_code == 200:
+                return True
+        return False
+
     async def add_employee(self, team_id: int, data: dict):
+        """Добавление сотрудника в команду"""
         employee_id = data["employee_id"]
-        employee_id = await self.get_employee(employee_id)["id"]
+        employee_exists = await self.get_employee(employee_id)
+        if not employee_exists:
+            raise HTTPException(status_code=404, detail=f"Пользователь с таким user_id={employee_id} не существует")
         team = await self.get_team_by_id(team_id)
-        stmt = insert(UserTeam).values(team_id=team.id, **data)
+        stmt = insert(TeamEmployee).values(team_id=team.id, **data)
         await self.session.execute(stmt)
-        return True

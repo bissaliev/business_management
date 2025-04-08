@@ -9,7 +9,7 @@ from sqlalchemy.orm import Mapped, mapped_column
 from app.database import Base
 
 
-class UserRole(str, Enum):
+class EmployeeRole(str, Enum):
     EMPLOYEE = "сотрудник"
     MANAGER = "менеджер"
     ADMINISTRATOR = "админ"
@@ -24,12 +24,12 @@ class Team(Base):
     team_code: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), unique=True, index=True, default=uuid.uuid4)
 
 
-class UserTeam(Base):
-    __tablename__ = "user_teams"
+class TeamEmployee(Base):
+    __tablename__ = "team_employee"
     id: Mapped[int] = mapped_column(primary_key=True, index=True, autoincrement=True)
-    user_id: Mapped[int]
+    employee_id: Mapped[int]
     team_id: Mapped[int] = mapped_column(ForeignKey("teams.id"))
-    role: Mapped[UserRole] = mapped_column(default=UserRole.EMPLOYEE)
+    role: Mapped[EmployeeRole] = mapped_column(default=EmployeeRole.EMPLOYEE)
 
 
 class TeamNews(Base):
@@ -39,15 +39,3 @@ class TeamNews(Base):
     title: Mapped[str] = mapped_column(String(250))
     content: Mapped[str] = mapped_column(TEXT)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
-
-
-# class Department(Base):
-#     __tablename__ = "departments"
-
-#     id: Mapped[int] = mapped_column(primary_key=True, index=True, autoincrement=True)
-#     name: Mapped[str] = mapped_column(String(100))
-#     team_id: Mapped[int] = mapped_column(ForeignKey("teams.id"))
-#     head_id: Mapped[int] = mapped_column(ForeignKey("employees.id"), nullable=True)
-
-# team: Mapped[Team] = relationship("Team", back_populates="departments")
-# head = relationship("Employee", back_populates="headed_department", foreign_keys=[head_id])
