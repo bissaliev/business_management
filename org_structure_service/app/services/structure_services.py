@@ -2,13 +2,14 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models import Department, Division, EmployeeManagers, EmployeeStructure, TeamStructure
+from app.schemas import Employee, SDepartment, SDivision, TeamStructureResponse
 
 
 class OrgStructureService:
     def __init__(self, session: AsyncSession):
         self.session = session
 
-    async def get_team_structure(self, team_id: int) -> dict:
+    async def get_team_structure(self, team_id: int) -> TeamStructureResponse:
         result = await self.session.execute(select(TeamStructure).where(TeamStructure.team_id == team_id))
         structure = result.scalar_one_or_none()
         structure_type = structure.structure_type if structure else "linear"
@@ -49,10 +50,11 @@ class OrgStructureService:
         ]
 
         hierarchy = self.build_hierarchy(departments, divisions, employees, extra_managers, structure_type)
-        return {"structure_type": structure_type, "hierarchy": hierarchy}
+        # return {"structure_type": structure_type, "hierarchy": hierarchy}
+        return TeamStructureResponse(structure_type=structure_type, hierarchy=hierarchy)
 
     # Обновлённая функция build_hierarchy
-    def build_hierarchy(
+    def build_hierarchy2(
         self,
         departments: list[dict],
         divisions: list[dict],
@@ -104,3 +106,53 @@ class OrgStructureService:
         if structure_type == "divisional":
             return {"divisions": list(div_map.values())}
         return {"departments": root_depts}  # Всегда список, даже для матричной структуры
+
+    def build_hierarchy(
+        self,
+        departments: list[dict],
+        divisions: list[dict],
+        employees: list[dict],
+        extra_managers: list[dict],
+        structure_type: str,
+    ) -> dict[str, list[SDivision] | list[SDepartment]]:
+        # Создаём Pydantic объекты для отделов
+        dept_map = {
+            dept["id"]: SDepartment(
+                id=dept["id"], name=dept["name"], division_id=dept["division_id"], children=[], employees=[]
+            )
+            for dept in departments
+        }
+
+        # Создаём Pydantic объекты для дивизионов
+        div_map = {div["id"]: SDivision(id=div["id"], name=div["name"], departments=[]) for div in divisions}
+
+        # Привязка сотрудников к отделам
+        for emp in employees:
+            dept_id = emp["dept_id"]
+            if dept_id in dept_map:
+                emp_data = Employee(
+                    employee_id=emp["employee_id"],
+                    role=emp["role"],
+                    managers=[emp["manager_id"]] if emp["manager_id"] else [],
+                )
+                for mgr in extra_managers:
+                    if mgr["emp_id"] == emp["id"]:
+                        emp_data.managers.append({"manager_id": mgr["manager_id"], "context": mgr["context"]})
+                dept_map[dept_id].employees.append(emp_data)
+
+        # Построение дерева отделов
+        root_depts = []
+        for dept in departments:
+            parent_id = dept["parent_id"]
+            if structure_type == "divisional" and dept["division_id"]:
+                div_map[dept["division_id"]].departments.append(dept_map[dept["id"]])
+            elif parent_id is None:
+                root_depts.append(dept_map[dept["id"]])
+            else:
+                if parent_id in dept_map:
+                    dept_map[parent_id].children.append(dept_map[dept["id"]])
+
+        # Возвращаем результат
+        if structure_type == "divisional":
+            return {"divisions": list(div_map.values())}
+        return {"departments": root_depts}
