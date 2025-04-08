@@ -1,0 +1,69 @@
+{
+    "structure_type": "linear_functional",
+    "hierarchy": {
+        "departments": [
+            {
+                "name": "Разработка",
+                "children": [],
+                "employees": [
+                    {
+                        "user_id": 2,
+                        "role": "manager",
+                        "managers": []
+                    },
+                    {
+                        "user_id": 1,
+                        "role": "developer",
+                        "managers": [
+                            2
+                        ]
+                    }
+                ]
+            },
+            {
+                "name": "Тестирование",
+                "children": [],
+                "employees": [
+                    {
+                        "user_id": 3,
+                        "role": "manager",
+                        "managers": []
+                    },
+                    {
+                        "user_id": 4,
+                        "role": "tester",
+                        "managers": [
+                            3
+                        ]
+                    }
+                ]
+            }
+        ],
+        "employees": {
+            "12": {
+                "user_id": 2,
+                "role": "manager",
+                "managers": []
+            },
+            "13": {
+                "user_id": 1,
+                "role": "developer",
+                "managers": [
+                    2
+                ]
+            },
+            "14": {
+                "user_id": 3,
+                "role": "manager",
+                "managers": []
+            },
+            "15": {
+                "user_id": 4,
+                "role": "tester",
+                "managers": [
+                    3
+                ]
+            }
+        }
+    }
+}

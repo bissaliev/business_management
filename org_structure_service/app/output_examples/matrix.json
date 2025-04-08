@@ -1,0 +1,47 @@
+{
+    "structure_type": "matrix",
+    "hierarchy": {
+        "departments": {
+            "4": {
+                "name": "Разработка",
+                "children": [],
+                "employees": [
+                    {
+                        "user_id": 2,
+                        "role": "manager",
+                        "managers": []
+                    },
+                    {
+                        "user_id": 1,
+                        "role": "developer",
+                        "managers": [
+                            2,
+                            {
+                                "manager_id": 3,
+                                "context": "project"
+                            }
+                        ]
+                    }
+                ]
+            }
+        },
+        "employees": {
+            "6": {
+                "user_id": 2,
+                "role": "manager",
+                "managers": []
+            },
+            "7": {
+                "user_id": 1,
+                "role": "developer",
+                "managers": [
+                    2,
+                    {
+                        "manager_id": 3,
+                        "context": "project"
+                    }
+                ]
+            }
+        }
+    }
+}
