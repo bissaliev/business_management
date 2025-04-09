@@ -1,12 +1,13 @@
 import httpx
 from fastapi import HTTPException
 from sqlalchemy import exists, insert, select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.config import settings
 from app.models import Department, Division, EmployeeStructure, TeamStructure
-from app.schemas import TeamStructureResponse
+from app.schemas import StructureType, TeamStructureResponse
 
 
 class OrgStructureService:
@@ -72,3 +73,52 @@ class OrgStructureService:
             return TeamStructureResponse(team_id=team_id, structure_type="linear", divisions=[], departments=[])
 
         return TeamStructureResponse.model_validate(team_structure)
+
+    async def exists_division(self, division_id: int, team_id: int):
+        """Проверка на существование дивизия"""
+        stmt = select(Division).where(Division.id == division_id, Division.team_id == team_id)
+        result = await self.session.execute(stmt)
+        return result.scalar_one_or_none()
+
+    async def create_department(self, department_data: dict):
+        """Создание департамента"""
+        stmt = select(TeamStructure).where(TeamStructure.team_id == department_data["team_id"])
+        result = await self.session.execute(stmt)
+        team_structure = result.scalar_one_or_none()
+        if not await self.exists_team_structure(department_data["team_id"]):
+            raise HTTPException(status_code=404, detail="TeamStructure не существует")
+
+        if team_structure.structure_type == StructureType.DIVISIONAL and department_data["division_id"] is None:
+            raise HTTPException(status_code=400, detail="division_id требуется для определения дивизионной структуры")
+
+        if department_data["division_id"] and team_structure.structure_type != StructureType.DIVISIONAL:
+            raise HTTPException(status_code=400, detail="division_id требуется для определения дивизионной структуры")
+
+        if department_data["division_id"] and not await self.exists_division(
+            department_data["division_id"], department_data["team_id"]
+        ):
+            raise HTTPException(status_code=404, detail="Division не существует")
+
+        if department_data["parent_department_id"]:
+            stmt = select(Department).where(
+                Department.id == department_data["parent_department_id"],
+                Department.team_id == department_data["team_id"],
+            )
+            result = await self.session.execute(stmt)
+            if not result.scalar_one_or_none():
+                raise HTTPException(status_code=404, detail="Parent department не существует")
+
+        db_dept = Department(**department_data)
+        self.session.add(db_dept)
+        try:
+            await self.session.commit()
+        except IntegrityError as e:
+            if "uq_department_team_name" in str(e):
+                raise HTTPException(
+                    status_code=409,
+                    detail=f"Отдел с именем {department_data['name']} уже существует для команды {department_data['team_id']}",
+                ) from e
+            # Если это другая ошибка IntegrityError (например, foreign key), возвращаем общую ошибку
+            raise HTTPException(status_code=400, detail="Database integrity error: " + str(e)) from e
+        await self.session.refresh(db_dept)
+        return db_dept
