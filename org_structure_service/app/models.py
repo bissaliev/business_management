@@ -1,7 +1,7 @@
 import enum
 from typing import Optional
 
-from sqlalchemy import Enum, ForeignKey, Integer, String
+from sqlalchemy import Enum, ForeignKey, Integer, String, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database import Base
@@ -38,6 +38,8 @@ class Division(Base):
     team_structure: Mapped["TeamStructure"] = relationship("TeamStructure", back_populates="divisions")
     departments: Mapped[list["Department"]] = relationship("Department", back_populates="division")
 
+    __table_args__ = (UniqueConstraint("team_id", "name", name="uq_division_team_name"),)
+
 
 class Department(Base):
     """Отдел"""
@@ -57,6 +59,8 @@ class Department(Base):
     )
     children: Mapped[list["Department"]] = relationship("Department", back_populates="parent_department")
     employees: Mapped[list["EmployeeStructure"]] = relationship("EmployeeStructure", back_populates="department")
+
+    __table_args__ = (UniqueConstraint("team_id", "name", name="uq_department_team_name"),)
 
 
 class EmployeeStructure(Base):
