@@ -12,6 +12,7 @@ class DepartmentCreate(BaseModel):
     team_id: int
     name: str
     parent_department_id: int | None = None
+    division_id: int | None = None
 
 
 class EmployeeStructureCreate(BaseModel):
@@ -86,3 +87,18 @@ class TeamStructureResponseShort(BaseModel):
     structure_type: StructureType
 
     model_config = {"from_attributes": True}
+
+
+class DivisionResponse(BaseModel):
+    """Модель дивизиона (для дивизионной структуры)"""
+
+    id: int
+    name: str
+
+    model_config = {"from_attributes": True}
+
+
+class DepartmentResponse(BaseModel):
+    team_id: int
+    name: str
+    parent_department_id: int | None = None
