@@ -6,7 +6,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import get_session
 from app.models import Department, EmployeeManagers, EmployeeStructure, TeamStructure
 from app.routers.dependencies import OrgStructureServiceDeps
-from app.schemas import DepartmentCreate, EmployeeManagerCreate, EmployeeStructureCreate, TeamStructureCreate
+from app.schemas import (
+    DepartmentCreate,
+    EmployeeManagerCreate,
+    EmployeeStructureCreate,
+    TeamStructureCreate,
+    TeamStructureResponse,
+    TeamStructureResponseShort,
+)
 
 router = APIRouter()
 
@@ -63,6 +70,12 @@ async def add_employee_manager(
 
 
 @router.get("/structure/{team_id}", summary="Получение иерархии")
-async def get_team_structure(team_id: int, org_structure_service: OrgStructureServiceDeps) -> dict:
+async def get_team_structure(team_id: int, org_structure_service: OrgStructureServiceDeps) -> TeamStructureResponse:
     hierarchy = await org_structure_service.get_team_structure(team_id)
     return hierarchy
+
+
+@router.get("/structure/", summary="Получение организационных структур")
+async def get_team_structure_all(org_structure_service: OrgStructureServiceDeps) -> list[TeamStructureResponseShort]:
+    team_structures = await org_structure_service.get_team_structure_all()
+    return team_structures
