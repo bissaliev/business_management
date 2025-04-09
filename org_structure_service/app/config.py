@@ -22,5 +22,8 @@ class Settings(BaseSettings):
     def get_user_url(self):
         return f"http://{self.USER_HOST}:{self.USER_PORT}/users"
 
+    def get_team_service__url(self):
+        return f"http://{self.TEAM_HOST}:{self.TEAM_PORT}/teams"
+
 
 settings = Settings()
