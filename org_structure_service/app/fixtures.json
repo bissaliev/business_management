@@ -2,23 +2,23 @@
     "team_structure": [
         {
             "team_id": 100,
-            "structure_type": "linear"
+            "structure_type": "Линейная"
         },
         {
             "team_id": 200,
-            "structure_type": "functional"
+            "structure_type": "Функциональная"
         },
         {
             "team_id": 300,
-            "structure_type": "matrix"
+            "structure_type": "Матричная"
         },
         {
             "team_id": 400,
-            "structure_type": "divisional"
+            "structure_type": "Дивизиональная"
         },
         {
             "team_id": 500,
-            "structure_type": "linear_functional"
+            "structure_type": "Линейно-функциональная"
         }
     ],
     "divisions": [

@@ -1,13 +1,13 @@
-from enum import Enum
+import enum
 from typing import Optional
 
-from sqlalchemy import ForeignKey, Integer, String
+from sqlalchemy import Enum, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database import Base
 
 
-class StructureType(str, Enum):
+class StructureType(str, enum.Enum):
     LINEAR = "Линейная"
     FUNCTIONAL = "Функциональная"
     MATRIX = "Матричная"
@@ -21,7 +21,9 @@ class TeamStructure(Base):
     __tablename__ = "team_structure"
 
     team_id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    structure_type: Mapped[StructureType] = mapped_column(String, default=StructureType.LINEAR)
+    structure_type: Mapped[StructureType] = mapped_column(
+        Enum(StructureType, native_enum=False), default=StructureType.LINEAR
+    )
 
     divisions: Mapped[list["Division"]] = relationship("Division", back_populates="team_structure")
     departments: Mapped[list["Department"]] = relationship("Department", back_populates="team_structure")
