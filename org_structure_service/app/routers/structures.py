@@ -1,13 +1,16 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_session
-from app.models import Department, EmployeeManagers, EmployeeStructure, TeamStructure
+from app.models import Department, Division, EmployeeManagers, EmployeeStructure, StructureType, TeamStructure
 from app.routers.dependencies import OrgStructureServiceDeps
 from app.schemas import (
     DepartmentCreate,
+    DepartmentResponse,
     EmployeeManagerCreate,
     EmployeeStructureCreate,
     TeamStructureCreate,
@@ -20,25 +23,56 @@ router = APIRouter()
 
 @router.post("/team-structure/", summary="Создание типа структуры команды")
 async def set_team_structure(
-    structure: TeamStructureCreate, session: Annotated[AsyncSession, Depends(get_session)]
-) -> dict:
-    db_structure = TeamStructure(team_id=structure.team_id, structure_type=structure.structure_type)
-    session.add(db_structure)
-    await session.commit()
-    return {"team_id": structure.team_id, "structure_type": structure.structure_type}
+    structure: TeamStructureCreate, org_structure_service: OrgStructureServiceDeps
+) -> TeamStructureResponseShort:
+    new_team_structure = await org_structure_service.create_team_structure(structure.model_dump())
+    return new_team_structure
 
 
 @router.post("/departments/", summary="Создание отдела")
 async def create_department(
     department: DepartmentCreate, session: Annotated[AsyncSession, Depends(get_session)]
-) -> dict:
-    db_dept = Department(
-        team_id=department.team_id, name=department.name, parent_department_id=department.parent_department_id
-    )
+) -> DepartmentResponse:
+    stmt = select(TeamStructure).where(TeamStructure.team_id == department.team_id)
+    result = await session.execute(stmt)
+    team_structure = result.scalar_one_or_none()
+    if not team_structure:
+        raise HTTPException(status_code=404, detail="TeamStructure не существует")
+
+    if team_structure.structure_type == StructureType.DIVISIONAL and department.division_id is None:
+        raise HTTPException(status_code=400, detail="division_id требуется для определения дивизионной структуры")
+
+    if department.division_id and team_structure.structure_type != StructureType.DIVISIONAL:
+        raise HTTPException(status_code=400, detail="division_id требуется для определения дивизионной структуры")
+
+    if department.division_id:
+        stmt = select(Division).where(Division.id == department.division_id, Division.team_id == department.team_id)
+        result = await session.execute(stmt)
+        if not result.scalar_one_or_none():
+            raise HTTPException(status_code=404, detail="Division не существует")
+
+    if department.parent_department_id:
+        stmt = select(Department).where(
+            Department.id == department.parent_department_id, Department.team_id == department.team_id
+        )
+        result = await session.execute(stmt)
+        if not result.scalar_one_or_none():
+            raise HTTPException(status_code=404, detail="Parent department не существует")
+
+    db_dept = Department(**department.model_dump())
     session.add(db_dept)
-    await session.commit()
+    try:
+        await session.commit()
+    except IntegrityError as e:
+        if "uq_department_team_name" in str(e):
+            raise HTTPException(
+                status_code=409,
+                detail=f"Отдел с именем {department.name} уже существует для команды {department.team_id}",
+            ) from e
+        # Если это другая ошибка IntegrityError (например, foreign key), возвращаем общую ошибку
+        raise HTTPException(status_code=400, detail="Database integrity error: " + str(e)) from e
     await session.refresh(db_dept)
-    return {"id": db_dept.id, "team_id": db_dept.team_id, "name": db_dept.name}
+    return db_dept
 
 
 @router.post("/structure/", summary="Добавление сотрудника")
