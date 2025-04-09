@@ -1,9 +1,11 @@
 from pydantic import BaseModel
 
+from app.models import StructureType
+
 
 class TeamStructureCreate(BaseModel):
     team_id: int
-    structure_type: str
+    structure_type: StructureType
 
 
 class DepartmentCreate(BaseModel):
@@ -25,12 +27,20 @@ class EmployeeManagerCreate(BaseModel):
     context: str
 
 
+class ExtraManager(BaseModel):
+    manager_id: int
+    context: str
+
+    model_config = {"from_attributes": True}
+
+
 class Employee(BaseModel):
     """Модель сотрудника"""
 
     employee_id: int
     role: str
-    managers: list[int | dict]  # Может быть просто ID или словарь {"manager_id": int, "context": str}
+    manager_id: int | None = None
+    extra_managers: list[ExtraManager] = []
 
     model_config = {"from_attributes": True}
 
@@ -41,6 +51,7 @@ class SDepartment(BaseModel):
     id: int
     name: str
     division_id: int | None = None
+    parent_department_id: int | None = None
     children: list["SDepartment"] = []
     employees: list[Employee] = []
 
@@ -60,7 +71,18 @@ class SDivision(BaseModel):
 class TeamStructureResponse(BaseModel):
     """Модель ответа эндпоинта"""
 
-    structure_type: str
-    hierarchy: dict[str, list[SDivision]] | dict[str, list[SDepartment]]  # "divisions" или "departments"
+    team_id: int
+    structure_type: StructureType
+    divisions: list["SDivision"] = []
+    departments: list["SDepartment"] = []
+
+    model_config = {"from_attributes": True}
+
+
+class TeamStructureResponseShort(BaseModel):
+    """Модель ответа эндпоинта"""
+
+    team_id: int
+    structure_type: StructureType
 
     model_config = {"from_attributes": True}
