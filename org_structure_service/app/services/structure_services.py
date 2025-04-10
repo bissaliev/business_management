@@ -4,7 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import settings
 from app.repositories.team_structure_repo import TeamStructureRepository
-from app.schemas import TeamStructureResponse
+from app.schemas.team_structures import TeamStructureResponse
 
 
 class OrgStructureService:

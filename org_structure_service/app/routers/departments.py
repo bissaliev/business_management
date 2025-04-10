@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 
 from app.routers.dependencies import DepartmentServiceDeps
-from app.schemas import (
+from app.schemas.departments import (
     DepartmentCreate,
     DepartmentResponse,
 )
