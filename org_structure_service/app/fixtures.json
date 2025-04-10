@@ -36,49 +36,49 @@
             "team_id": 100,
             "division_id": null,
             "name": "Разработка",
-            "parent_department_id": null
+            "parent_id": null
         },
         {
             "team_id": 200,
             "division_id": null,
             "name": "Разработка",
-            "parent_department_id": null
+            "parent_id": null
         },
         {
             "team_id": 200,
             "division_id": null,
             "name": "Тестирование",
-            "parent_department_id": null
+            "parent_id": null
         },
         {
             "team_id": 300,
             "division_id": null,
             "name": "Разработка",
-            "parent_department_id": null
+            "parent_id": null
         },
         {
             "team_id": 400,
             "division_id": 1,
             "name": "Разработка A",
-            "parent_department_id": null
+            "parent_id": null
         },
         {
             "team_id": 400,
             "division_id": 2,
             "name": "Разработка B",
-            "parent_department_id": null
+            "parent_id": null
         },
         {
             "team_id": 500,
             "division_id": null,
             "name": "Разработка",
-            "parent_department_id": null
+            "parent_id": null
         },
         {
             "team_id": 500,
             "division_id": null,
             "name": "Тестирование",
-            "parent_department_id": null
+            "parent_id": null
         }
     ],
     "employee_structure": [

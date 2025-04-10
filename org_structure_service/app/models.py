@@ -50,7 +50,7 @@ class Department(Base):
     team_id: Mapped[int] = mapped_column(ForeignKey("team_structure.team_id"), nullable=False)
     division_id: Mapped[Optional[int]] = mapped_column(ForeignKey("divisions.id"), nullable=True)
     name: Mapped[str] = mapped_column(String, nullable=False)
-    parent_department_id: Mapped[Optional[int]] = mapped_column(ForeignKey("departments.id"), nullable=True)
+    parent_id: Mapped[Optional[int]] = mapped_column(ForeignKey("departments.id"), nullable=True)
 
     team_structure: Mapped["TeamStructure"] = relationship("TeamStructure", back_populates="departments")
     division: Mapped[Optional["Division"]] = relationship("Division", back_populates="departments")

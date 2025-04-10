@@ -11,7 +11,7 @@ class TeamStructureCreate(BaseModel):
 class DepartmentCreate(BaseModel):
     team_id: int
     name: str
-    parent_department_id: int | None = None
+    parent_id: int | None = None
     division_id: int | None = None
 
 
@@ -52,7 +52,7 @@ class SDepartment(BaseModel):
     id: int
     name: str
     division_id: int | None = None
-    parent_department_id: int | None = None
+    parent_id: int | None = None
     children: list["SDepartment"] = []
     employees: list[Employee] = []
 
