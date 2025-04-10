@@ -1,23 +1,26 @@
 import httpx
 from fastapi import HTTPException
-from sqlalchemy import exists, insert, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import selectinload
 
 from app.config import settings
-from app.models import Department, Division, EmployeeStructure, TeamStructure
+from app.repositories.team_structure_repo import TeamStructureRepository
 from app.schemas import TeamStructureResponse
 
 
 class OrgStructureService:
+    """Сервис Организационной структуры команды"""
+
     def __init__(self, session: AsyncSession):
         self.session = session
+        self.repo = TeamStructureRepository(session)
 
     async def get_team_structure_all(self):
-        result = await self.session.scalars(select(TeamStructure))
-        return result.all()
+        team_structures = await self.repo.get_all()
+        return team_structures
 
+    # TODO: Поправить правильную обработку запросов httpx.AsyncClient
     async def exists_team_on_team_service(self, team_id: int):
+        """Проверка на существование команды в team_service"""
         base_team_url = settings.get_team_service__url()
         url = f"{base_team_url}/{team_id}/"
         try:
@@ -29,46 +32,23 @@ class OrgStructureService:
         except httpx.ConnectError:
             return True
 
-    async def exists_team_structure(self, team_id: int):
-        stmt = select(exists().where(TeamStructure.team_id == team_id))
-        result = await self.session.execute(stmt)
-        return result.scalar()
-
+    # TODO: Подумать о том чтобы создавать команду на этом сервисе в момент создания в team service
     async def create_team_structure(self, structure_data: dict):
+        """Создание организационной структуры команды"""
         team_id = structure_data["team_id"]
         is_exists_team = await self.exists_team_on_team_service(team_id)
         if is_exists_team is None:
             raise HTTPException(status_code=404, detail=f"Команда с id={team_id} еще не зарегистрирована")
-        if await self.exists_team_structure(team_id):
-            raise HTTPException(status_code=400, detail=f"Структура команды с id={team_id} уже существует")
-        stmt = insert(TeamStructure).values(**structure_data).returning(TeamStructure)
-        result = await self.session.scalars(stmt)
-        return result.first()
+        if await self.repo.exists(team_id):
+            raise HTTPException(status_code=400, detail=f"Структура команды с team_id={team_id} уже существует")
+        team_structure = await self.repo.add(structure_data)
+        return team_structure
 
     async def get_team_structure(self, team_id: int) -> TeamStructureResponse:
-        # Запрос с загрузкой всех связанных данных
-        stmt = (
-            select(TeamStructure)
-            .where(TeamStructure.team_id == team_id)
-            .options(
-                # Загружаем divisions и их departments
-                selectinload(TeamStructure.divisions)
-                .selectinload(Division.departments)
-                .options(
-                    selectinload(Department.employees).selectinload(EmployeeStructure.extra_managers),
-                    selectinload(Department.children),  # Рекурсивно загружаем дочерние отделы
-                ),
-                # Загружаем departments напрямую
-                selectinload(TeamStructure.departments).options(
-                    selectinload(Department.employees).selectinload(EmployeeStructure.extra_managers),
-                    selectinload(Department.children),  # Рекурсивно загружаем дочерние отделы
-                ),
-            )
-        )
-        result = await self.session.execute(stmt)
-        team_structure = result.scalar_one_or_none()
+        """Получение структуры команды с иерархией департаментов и дивизий"""
+        team_structure = await self.repo.get_with_relationship_upload(team_id)
 
         if not team_structure:
-            return TeamStructureResponse(team_id=team_id, structure_type="linear", divisions=[], departments=[])
+            raise HTTPException(status_code=400, detail=f"Структура команды с team_id={team_id} не существует")
 
         return TeamStructureResponse.model_validate(team_structure)
