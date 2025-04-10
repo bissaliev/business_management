@@ -5,6 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_session
 from app.services.structure_services import OrgStructureService
+from app.services.department_service import DepartmentService
 
 
 async def org_structure_service(session: Annotated[AsyncSession, Depends(get_session)]):
@@ -12,3 +13,10 @@ async def org_structure_service(session: Annotated[AsyncSession, Depends(get_ses
 
 
 OrgStructureServiceDeps = Annotated[OrgStructureService, Depends(org_structure_service)]
+
+
+async def department_service(session: Annotated[AsyncSession, Depends(get_session)]):
+    return DepartmentService(session)
+
+
+DepartmentServiceDeps = Annotated[DepartmentService, Depends(department_service)]
