@@ -35,3 +35,11 @@ async def add_employee_manager(
     session.add(db_mgr)
     await session.commit()
     return {"message": "Manager added"}
+
+
+@router.get("/{department_id}", summary="Список сотрудников определенного департамента")
+async def get_department_employees(
+    department_id: int, employee_service: EmployeeServiceDeps
+) -> list[EmployeeResponse]:
+    employees = await employee_service.get_department_employees(department_id)
+    return employees
