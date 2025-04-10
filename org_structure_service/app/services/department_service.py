@@ -48,7 +48,6 @@ class DepartmentService:
 
         try:
             db_dept = await self.repo.add(department_data)
-            await self.session.commit()
         except IntegrityError as e:
             if "uq_department_team_name" in str(e):
                 raise HTTPException(
