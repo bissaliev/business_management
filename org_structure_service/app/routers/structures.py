@@ -7,8 +7,6 @@ from app.database import get_session
 from app.models import EmployeeManagers, EmployeeStructure
 from app.routers.dependencies import OrgStructureServiceDeps
 from app.schemas import (
-    DepartmentCreate,
-    DepartmentResponse,
     EmployeeManagerCreate,
     EmployeeStructureCreate,
     TeamStructureCreate,
@@ -25,14 +23,6 @@ async def set_team_structure(
 ) -> TeamStructureResponseShort:
     new_team_structure = await org_structure_service.create_team_structure(structure.model_dump())
     return new_team_structure
-
-
-@router.post("/departments/", summary="Создание отдела")
-async def create_department(
-    department: DepartmentCreate, org_structure_service: OrgStructureServiceDeps
-) -> DepartmentResponse:
-    new_department = await org_structure_service.create_department(department.model_dump())
-    return new_department
 
 
 @router.post("/structure/", summary="Добавление сотрудника")
