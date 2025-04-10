@@ -30,6 +30,7 @@ class EmployeeService:
         return await self.repo.exists_in_department(employee_id, department_id)
 
     async def add_employee(self, employee_data: dict) -> EmployeeStructure:
+        """Добавление работника в организационную структуру"""
         if not await self.exists_user_in_user_service(employee_data["employee_id"]):
             raise HTTPException(status_code=404, detail="Данного работника не существует в БД")
         if "department_id" in employee_data:
@@ -46,4 +47,9 @@ class EmployeeService:
             raise HTTPException(status_code=500, detail=str(e)) from e
 
     async def get_employees(self) -> list[EmployeeStructure]:
+        """Получить список всех сотрудников"""
         return await self.repo.get_all()
+
+    async def get_department_employees(self, department_id: int) -> list[EmployeeStructure]:
+        """Получить список сотрудников по идентификатору департамента"""
+        return await self.repo.get_department_employees(department_id)
