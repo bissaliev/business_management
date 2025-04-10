@@ -77,6 +77,8 @@ class EmployeeStructure(Base):
     department: Mapped[Optional["Department"]] = relationship("Department", back_populates="employees")
     extra_managers: Mapped[list["EmployeeManagers"]] = relationship("EmployeeManagers", back_populates="employee")
 
+    __table_args__ = (UniqueConstraint("employee_id", "department_id", name="uq_employee_department"),)
+
 
 class EmployeeManagers(Base):
     """Дополнительные руководители (для матричной структуры)"""
