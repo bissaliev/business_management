@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.repositories.department_repo import DepartmentRepository
 from app.repositories.division_repo import DivisionRepository
 from app.repositories.team_structure_repo import TeamStructureRepository
-from app.schemas import StructureType
+from app.schemas.team_structures import StructureType
 
 
 class DepartmentService:
@@ -41,7 +41,7 @@ class DepartmentService:
         if await self.exists_division(department_data["division_id"]):
             raise HTTPException(status_code=404, detail="Division не существует")
 
-        if department_data["parent_id"] and await self.exists_parent(
+        if department_data["parent_id"] and not await self.exists_parent(
             department_data["parent_id"], department_data["team_id"]
         ):
             raise HTTPException(status_code=404, detail="Parent department не существует")
