@@ -6,7 +6,13 @@ from app.schemas.teams import AddEmployee, TeamCreate, TeamResponse
 router = APIRouter()
 
 
-@router.post("/teams/")
+@router.get("/")
+async def get_teams(team_service: TeamServiceDeps) -> list[TeamResponse]:
+    teams = await team_service.get_teams()
+    return teams
+
+
+@router.post("/")
 async def create_team(team_service: TeamServiceDeps, team_data: TeamCreate) -> TeamResponse:
     team = await team_service.create_team(team_data.model_dump())
     return team
