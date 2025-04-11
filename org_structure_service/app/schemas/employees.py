@@ -8,6 +8,12 @@ class EmployeeStructureCreate(BaseModel):
     manager_id: int | None = None
 
 
+class EmployeeStructureUpdate(BaseModel):
+    department_id: int | None = None
+    role: str | None = None
+    manager_id: int | None = None
+
+
 class EmployeeManagerCreate(BaseModel):
     employee_structure_id: int
     manager_id: int
