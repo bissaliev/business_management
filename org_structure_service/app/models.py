@@ -15,6 +15,12 @@ class StructureType(str, enum.Enum):
     LINEAR_FUNCTIONAL = "Линейно-функциональная"
 
 
+class EmployeeRole(str, enum.Enum):
+    EMPLOYEE = "сотрудник"
+    MANAGER = "менеджер"
+    ADMINISTRATOR = "админ"
+
+
 class TeamStructure(Base):
     """Структура команды"""
 
