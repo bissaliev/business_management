@@ -4,6 +4,8 @@ from app.schemas.employees import EmployeeResponse
 
 
 class DepartmentCreate(BaseModel):
+    """Модель для создания департамента"""
+
     team_id: int
     name: str
     parent_id: int | None = None
@@ -11,7 +13,7 @@ class DepartmentCreate(BaseModel):
 
 
 class SDepartment(BaseModel):
-    """Модель отдела"""
+    """Модель отдела(для орг. структуры)"""
 
     id: int
     name: str
@@ -24,6 +26,19 @@ class SDepartment(BaseModel):
 
 
 class DepartmentResponse(BaseModel):
+    """Модель ответа для департамента"""
+
+    id: int
     team_id: int
     name: str
     parent_id: int | None = None
+    division_id: int | None
+
+
+class DepartmentUpdate(BaseModel):
+    """Модель для обновления департамента"""
+
+    team_id: int | None = None
+    name: str | None = None
+    parent_id: int | None = None
+    division_id: int | None = None
