@@ -30,6 +30,12 @@ async def add_employee_to_structure(
     return new_employee
 
 
+@router.get("/{id}", summary="Получить работника")
+async def get_one(id: int, employee_service: EmployeeServiceDeps) -> EmployeeResponse:
+    employee = await employee_service.get_employee(id)
+    return employee
+
+
 @router.post("/managers/", summary="Добавление дополнительного руководителя")
 async def add_employee_manager(
     manager: EmployeeManagerCreate, session: Annotated[AsyncSession, Depends(get_session)]
