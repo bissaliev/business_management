@@ -1,13 +1,9 @@
-from typing import Annotated
+from fastapi import APIRouter
 
-from fastapi import APIRouter, Depends
-from sqlalchemy.ext.asyncio import AsyncSession
-
-from app.database import get_session
-from app.models import EmployeeManagers
-from app.routers.dependencies import EmployeeServiceDeps
+from app.routers.dependencies import EmployeeManagerServiceDeps, EmployeeServiceDeps
 from app.schemas.employees import (
     EmployeeManagerCreate,
+    EmployeeManagerResponse,
     EmployeeResponse,
     EmployeeStructureCreate,
     EmployeeStructureUpdate,
@@ -36,18 +32,6 @@ async def get_one(id: int, employee_service: EmployeeServiceDeps) -> EmployeeRes
     return employee
 
 
-@router.post("/managers/", summary="Добавление дополнительного руководителя")
-async def add_employee_manager(
-    manager: EmployeeManagerCreate, session: Annotated[AsyncSession, Depends(get_session)]
-) -> dict:
-    db_mgr = EmployeeManagers(
-        employee_structure_id=manager.employee_structure_id, manager_id=manager.manager_id, context=manager.context
-    )
-    session.add(db_mgr)
-    await session.commit()
-    return {"message": "Manager added"}
-
-
 @router.get("/{department_id}", summary="Список сотрудников определенного департамента")
 async def get_department_employees(
     department_id: int, employee_service: EmployeeServiceDeps
@@ -62,3 +46,11 @@ async def update_employees(
 ) -> EmployeeResponse:
     employee = await employee_service.update_employee(id, employee_data.model_dump(exclude_unset=True))
     return employee
+
+
+@router.post("/managers/", summary="Добавление дополнительного руководителя")
+async def add_employee_manager(
+    manager: EmployeeManagerCreate, employee_manager_service: EmployeeManagerServiceDeps
+) -> EmployeeManagerResponse:
+    employee_manager = await employee_manager_service.add_manager(manager.model_dump())
+    return employee_manager
