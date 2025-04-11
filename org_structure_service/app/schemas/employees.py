@@ -1,4 +1,13 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
+
+from app.models import EmployeeRole
+
+
+class UserResponse(BaseModel):
+    user_id: int
+    name: str
+    email: EmailStr
+    status: EmployeeRole
 
 
 class EmployeeStructureCreate(BaseModel):
@@ -15,6 +24,13 @@ class EmployeeStructureUpdate(BaseModel):
 
 
 class EmployeeManagerCreate(BaseModel):
+    employee_structure_id: int
+    manager_id: int
+    context: str
+
+
+class EmployeeManagerResponse(BaseModel):
+    id: int
     employee_structure_id: int
     manager_id: int
     context: str
