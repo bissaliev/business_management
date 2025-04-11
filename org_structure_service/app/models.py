@@ -72,8 +72,6 @@ class Department(Base):
     children: Mapped[list["Department"]] = relationship("Department", back_populates="parent_department")
     employees: Mapped[list["EmployeeStructure"]] = relationship("EmployeeStructure", back_populates="department")
 
-    __table_args__ = (UniqueConstraint("team_id", "name", name="uq_department_team_name"),)
-
     def __repr__(self):
         return f"{self.__class__.__name__}(id={self.id}, team_id={self.team_id}, name={self.name})"
 
