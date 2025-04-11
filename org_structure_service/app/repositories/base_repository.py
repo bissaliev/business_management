@@ -29,8 +29,8 @@ class BaseRepository(abc.ABC):
         result = await self.session.scalars(select(self.model))
         return result.all()
 
-    async def update(self, data: dict):
-        stmt = update(self.model).values(**data).returning(self.model)
+    async def update(self, reverence, data: dict):
+        stmt = update(self.model).where(self.model.id == reverence).values(**data).returning(self.model)
         result = await self.session.execute(stmt)
         return result.scalar_one_or_none()
 
