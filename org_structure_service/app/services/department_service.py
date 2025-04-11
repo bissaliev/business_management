@@ -1,7 +1,8 @@
 from fastapi import HTTPException
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.models import Department
 from app.repositories.department_repo import DepartmentRepository
 from app.repositories.division_repo import DivisionRepository
 from app.repositories.team_structure_repo import TeamStructureRepository
@@ -9,6 +10,8 @@ from app.schemas.team_structures import StructureType
 
 
 class DepartmentService:
+    """Сервис для управления департаментами"""
+
     def __init__(self, session: AsyncSession):
         self.session = session
         self.repo = DepartmentRepository(session)
@@ -25,9 +28,9 @@ class DepartmentService:
         """Проверка на существование дивизии"""
         return division_id and not await self.division_repo.exists(division_id)
 
-    async def exists_parent(self, parent_id: int, team_id: int):
-        """Проверка на существование департамента в team_id"""
-        return await self.repo.parent_exists(parent_id, team_id)
+    async def exists_department(self, parent_id: int):
+        """Проверка на существование департамента"""
+        return await self.repo.exists(parent_id)
 
     async def create_department(self, department_data: dict):
         """Создание департамента"""
@@ -41,22 +44,32 @@ class DepartmentService:
         if await self.exists_division(department_data["division_id"]):
             raise HTTPException(status_code=404, detail="Division не существует")
 
-        if department_data["parent_id"] and not await self.exists_parent(
-            department_data["parent_id"], department_data["team_id"]
-        ):
-            raise HTTPException(status_code=404, detail="Parent department не существует")
+        if department_data["parent_id"] and not await self.exists_department(department_data["parent_id"]):
+            raise HTTPException(
+                status_code=404, detail=f"Департамент с id={department_data['parent_id']} не существует"
+            )
 
         try:
-            db_dept = await self.repo.add(department_data)
-        except IntegrityError as e:
-            if "uq_department_team_name" in str(e):
-                raise HTTPException(
-                    status_code=409,
-                    detail=(
-                        f"Департамент с именем {department_data['name']} "
-                        f"уже существует для команды {department_data['team_id']}"
-                    ),
-                ) from e
-            raise HTTPException(status_code=400, detail="Database integrity error: " + str(e)) from e
-        await self.session.refresh(db_dept)
-        return db_dept
+            department = await self.repo.add(department_data)
+            return department
+        except SQLAlchemyError as e:
+            raise HTTPException(status_code=500, detail="Ошибка  базы данных") from e
+
+    async def get_departments(self) -> list[Department]:
+        """Получение всех департаментов"""
+        departments = await self.repo.get_all()
+        return departments
+
+    async def get_department(self, department_id: int) -> Department:
+        department = await self.repo.get(department_id)
+        if not department:
+            raise HTTPException(status_code=404, detail=f"Департамент с id={department_id} не существует")
+        return department
+
+    async def update_department(self, department_id: int, update_data: dict) -> Department:
+        if not await self.repo.exists(department_id):
+            raise HTTPException(status_code=404, detail=f"Департамент с id={department_id} не существует")
+        try:
+            return await self.repo.update(department_id, update_data)
+        except SQLAlchemyError as e:
+            raise HTTPException(status_code=500, detail="Ошибка  базы данных") from e
