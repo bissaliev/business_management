@@ -16,16 +16,21 @@ class EmployeeService:
         self.repo = EmployeeRepository(session)
         self.department_repo = DepartmentRepository(session)
 
-    async def exists_department(self, department_id: int):
+    async def exists(self, id: int) -> bool:
+        """Проверка на существование работника в организационной структуре"""
+        return await self.repo.exists(id)
+
+    async def exists_department(self, department_id: int) -> bool:
         """Проверка на существование департамента"""
         return await self.department_repo.exists(department_id)
 
     # TODO: Определить логику проверки пользователя в user_service
-    async def exists_user_in_user_service(self, user_id: int) -> EmployeeStructure:
+    # TODO: Определить логику проверки роли пользователя
+    async def exists_user_in_user_service(self, user_id: int) -> bool:
         """Проверка на существование пользователя в БД user_service"""
         return bool(user_id)
 
-    async def exists_in_department(self, employee_id, department_id):
+    async def exists_in_department(self, employee_id: int, department_id: int) -> bool:
         """Проверка на существование связи работника и департамента"""
         return await self.repo.exists_in_department(employee_id, department_id)
 
@@ -33,6 +38,7 @@ class EmployeeService:
         """Добавление работника в организационную структуру"""
         if not await self.exists_user_in_user_service(employee_data["employee_id"]):
             raise HTTPException(status_code=404, detail="Данного работника не существует в БД")
+
         if "department_id" in employee_data:
             if not await self.exists_department(employee_data["department_id"]):
                 raise HTTPException(status_code=404, detail="Департамент не существует")
@@ -43,6 +49,22 @@ class EmployeeService:
         try:
             employee = await self.repo.add(employee_data)
             return employee
+        except SQLAlchemyError as e:
+            raise HTTPException(status_code=500, detail=str(e)) from e
+
+    async def update_employee(self, id: int, employee_data: dict) -> EmployeeStructure:
+        """Обновление данных"""
+        if not await self.exists(id):
+            raise HTTPException(status_code=404, detail="Работника не существует в организационной структуре")
+
+        if "department_id" in employee_data and not await self.exists_department(employee_data["department_id"]):
+            raise HTTPException(status_code=404, detail="Департамент не существует")
+
+        if "manager_id" in employee_data and not await self.exists_user_in_user_service(employee_data["manager_id"]):
+            raise HTTPException(status_code=404, detail="Данного менеджера не существует")
+
+        try:
+            return await self.repo.update(id, employee_data)
         except SQLAlchemyError as e:
             raise HTTPException(status_code=500, detail=str(e)) from e
 
