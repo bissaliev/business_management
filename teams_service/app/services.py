@@ -5,11 +5,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import settings
 from app.models.teams import Team, TeamEmployee
+from app.repositories.team_repo import TeamRepository
 
 
 class TeamService:
     def __init__(self, session: AsyncSession):
         self.session = session
+        self.repo = TeamRepository(session)
 
     async def get_team_by_code(self, team_code: str):
         stmt = select(Team).where(Team.team_code == team_code)
@@ -50,3 +52,7 @@ class TeamService:
         team = await self.get_team_by_id(team_id)
         stmt = insert(TeamEmployee).values(team_id=team.id, **data)
         await self.session.execute(stmt)
+
+    async def get_teams(self) -> list[Team]:
+        teams = await self.repo.get_all()
+        return teams
