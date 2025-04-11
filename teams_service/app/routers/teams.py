@@ -18,6 +18,11 @@ async def create_team(team_service: TeamServiceDeps, team_data: TeamCreate) -> T
     return team
 
 
+@router.get("/{id}")
+async def get_team(id: int, team_service: TeamServiceDeps) -> TeamResponse:
+    return await team_service.get_one(id)
+
+
 @router.get("/by-code/{team_code}")
 async def get_team_by_code(team_service: TeamServiceDeps, team_code: str) -> TeamResponse:
     team = await team_service.get_team_by_code(team_code)
