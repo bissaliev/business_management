@@ -2,27 +2,70 @@ services:
     auth_db:
         image: postgres
         ports:
-            - "5432:5432"
+            - "5433:5432"
         env_file:
             - auth_service/.env
+        healthcheck:
+            test: ["CMD-SHELL", "pg_isready -U postgres"]
+            interval: 5s
+            timeout: 5s
+            retries: 5
+            start_period: 5s
 
     auth_service:
       build: ./auth_service
       env_file:
         - ./auth_service/.env
       ports:
-        - "8001:8001"
+        - "8001:8000"
+      depends_on:
+            auth_db:
+                condition: service_healthy
 
     team_db:
         image: postgres
         ports:
-            - "5433:5432"
+            - "5434:5432"
         env_file:
             - teams_service/.env
+        healthcheck:
+            test: ["CMD-SHELL", "pg_isready -U postgres"]
+            interval: 5s
+            timeout: 5s
+            retries: 5
+            start_period: 5s
 
     teams_service:
       build: ./teams_service
       env_file:
         - ./teams_service/.env
       ports:
-        - "8080:8080"
+        - "8002:8000"
+
+      depends_on:
+            team_db:
+                condition: service_healthy
+
+    org_structure_db:
+        image: postgres
+        ports:
+            - "5435:5432"
+        env_file:
+            - ./org_structure_service/.env
+        healthcheck:
+            test: ["CMD-SHELL", "pg_isready -U postgres"]
+            interval: 5s
+            timeout: 5s
+            retries: 5
+            start_period: 5s
+
+    org_structure_service:
+        build: ./org_structure_service
+        env_file:
+            - ./org_structure_service/.env
+        ports:
+            - "8003:8000"
+
+        depends_on:
+            org_structure_db:
+                condition: service_healthy
