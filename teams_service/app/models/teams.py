@@ -1,15 +1,15 @@
+import enum
 import uuid
 from datetime import datetime
-from enum import Enum
 
-from sqlalchemy import TEXT, DateTime, ForeignKey, String
+from sqlalchemy import TEXT, DateTime, Enum, ForeignKey, String
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.database import Base
 
 
-class EmployeeRole(str, Enum):
+class EmployeeRole(str, enum.Enum):
     EMPLOYEE = "сотрудник"
     MANAGER = "менеджер"
     ADMINISTRATOR = "админ"
@@ -29,7 +29,7 @@ class TeamEmployee(Base):
     id: Mapped[int] = mapped_column(primary_key=True, index=True, autoincrement=True)
     employee_id: Mapped[int]
     team_id: Mapped[int] = mapped_column(ForeignKey("teams.id"))
-    role: Mapped[EmployeeRole] = mapped_column(default=EmployeeRole.EMPLOYEE)
+    role: Mapped[EmployeeRole] = mapped_column(Enum(EmployeeRole, native_enum=False), default=EmployeeRole.EMPLOYEE)
 
 
 class TeamNews(Base):

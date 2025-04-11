@@ -1,6 +1,6 @@
 from pydantic import UUID4, BaseModel
 
-from app.models.teams import TeamEmployee
+from app.models.teams import EmployeeRole
 
 
 class TeamCreate(BaseModel):
@@ -19,4 +19,4 @@ class TeamResponse(BaseModel):
 
 class AddEmployee(BaseModel):
     employee_id: int
-    employee_role: TeamEmployee = TeamEmployee.EMPLOYEE
+    employee_role: EmployeeRole = EmployeeRole.EMPLOYEE
