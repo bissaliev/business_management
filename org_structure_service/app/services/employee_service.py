@@ -3,7 +3,8 @@ from fastapi import HTTPException
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models import EmployeeStructure
+from app.clients.user_client import UserServiceClient
+from app.models import EmployeeRole, EmployeeStructure
 from app.repositories.department_repo import DepartmentRepository
 from app.repositories.employee_repo import EmployeeRepository
 
@@ -15,6 +16,7 @@ class EmployeeService:
         self.session = session
         self.repo = EmployeeRepository(session)
         self.department_repo = DepartmentRepository(session)
+        self.user_client = UserServiceClient()
 
     async def exists(self, id: int) -> bool:
         """Проверка на существование работника в организационной структуре"""
@@ -26,9 +28,9 @@ class EmployeeService:
 
     # TODO: Определить логику проверки пользователя в user_service
     # TODO: Определить логику проверки роли пользователя
-    async def exists_user_in_user_service(self, user_id: int) -> bool:
+    async def get_user_in_user_service(self, user_id: int) -> bool:
         """Проверка на существование пользователя в БД user_service"""
-        return bool(user_id)
+        return await self.user_client.get_user(user_id)
 
     async def exists_in_department(self, employee_id: int, department_id: int) -> bool:
         """Проверка на существование связи работника и департамента"""
@@ -36,7 +38,8 @@ class EmployeeService:
 
     async def add_employee(self, employee_data: dict) -> EmployeeStructure:
         """Добавление работника в организационную структуру"""
-        if not await self.exists_user_in_user_service(employee_data["employee_id"]):
+        user = await self.get_user_in_user_service(employee_data["employee_id"])
+        if not user:
             raise HTTPException(status_code=404, detail="Данного работника не существует в БД")
 
         if "department_id" in employee_data:
@@ -60,8 +63,18 @@ class EmployeeService:
         if "department_id" in employee_data and not await self.exists_department(employee_data["department_id"]):
             raise HTTPException(status_code=404, detail="Департамент не существует")
 
-        if "manager_id" in employee_data and not await self.exists_user_in_user_service(employee_data["manager_id"]):
-            raise HTTPException(status_code=404, detail="Данного менеджера не существует")
+        if "manager_id" in employee_data:
+            manager = await self.get_user_in_user_service(employee_data["manager_id"])
+            if not manager:
+                raise HTTPException(status_code=404, detail="Данного менеджера не существует")
+            if manager.status != EmployeeRole.MANAGER:
+                raise HTTPException(
+                    status_code=404,
+                    detail=(
+                        f"Данный пользователь имеет статус `{manager.status.value}`, "
+                        f"а должен иметь статус `{EmployeeRole.MANAGER.value}`"
+                    ),
+                )
 
         try:
             return await self.repo.update(id, employee_data)
