@@ -1,19 +1,16 @@
 {
     "teams": [
         {
-            "id": 1,
             "name": "Backend Team",
             "description": "Команда разработки серверной части платформы",
             "team_code": "550e8400-e29b-41d4-a716-446655440000"
         },
         {
-            "id": 2,
             "name": "Frontend Team",
             "description": "Команда разработки интерфейсов и клиентской части",
             "team_code": "6ba7b810-9dad-11d1-80b4-00c04fd430c8"
         },
         {
-            "id": 3,
             "name": "DevOps Team",
             "description": "Команда настройки серверов и CI/CD",
             "team_code": "f47ac10b-58cc-4372-a567-0e02b2c3d479"
@@ -21,37 +18,31 @@
     ],
     "team_employee": [
         {
-            "id": 1,
             "employee_id": 101,
             "team_id": 1,
             "role": "админ"
         },
         {
-            "id": 2,
             "employee_id": 102,
             "team_id": 1,
             "role": "менеджер"
         },
         {
-            "id": 3,
             "employee_id": 103,
             "team_id": 1,
             "role": "сотрудник"
         },
         {
-            "id": 4,
             "employee_id": 104,
             "team_id": 2,
             "role": "менеджер"
         },
         {
-            "id": 5,
             "employee_id": 105,
             "team_id": 2,
             "role": "сотрудник"
         },
         {
-            "id": 6,
             "employee_id": 106,
             "team_id": 3,
             "role": "сотрудник"
@@ -59,25 +50,21 @@
     ],
     "team_news": [
         {
-            "id": 1,
             "team_id": 1,
             "title": "Обновление API v2",
             "content": "Команда Backend успешно развернула новую версию API с улучшенной производительностью."
         },
         {
-            "id": 2,
             "team_id": 1,
             "title": "Планы на следующий спринт",
             "content": "Обсудили внедрение новых микросервисов для аналитики."
         },
         {
-            "id": 3,
             "team_id": 2,
             "title": "Релиз нового интерфейса",
             "content": "Frontend Team выпустила обновленный дизайн личного кабинета."
         },
         {
-            "id": 4,
             "team_id": 3,
             "title": "Настройка CI/CD",
             "content": "DevOps завершили автоматизацию деплоя для всех сред."
