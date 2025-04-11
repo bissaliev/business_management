@@ -28,6 +28,9 @@ class TeamStructure(Base):
     divisions: Mapped[list["Division"]] = relationship("Division", back_populates="team_structure")
     departments: Mapped[list["Department"]] = relationship("Department", back_populates="team_structure")
 
+    def __repr__(self):
+        return f"{self.__class__.__name__}(team_id={self.team_id}, structure_type={self.structure_type})"
+
 
 class Division(Base):
     __tablename__ = "divisions"
@@ -40,17 +43,20 @@ class Division(Base):
 
     __table_args__ = (UniqueConstraint("team_id", "name", name="uq_division_team_name"),)
 
+    def __repr__(self):
+        return f"{self.__class__.__name__}(id={self.id}, team_id={self.team_id}, name={self.name})"
+
 
 class Department(Base):
     """Отдел"""
 
     __tablename__ = "departments"
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    id: Mapped[int] = mapped_column(primary_key=True)
     team_id: Mapped[int] = mapped_column(ForeignKey("team_structure.team_id"), nullable=False)
-    division_id: Mapped[Optional[int]] = mapped_column(ForeignKey("divisions.id"), nullable=True)
-    name: Mapped[str] = mapped_column(String, nullable=False)
-    parent_id: Mapped[Optional[int]] = mapped_column(ForeignKey("departments.id"), nullable=True)
+    division_id: Mapped[int | None] = mapped_column(ForeignKey("divisions.id"), nullable=True)
+    name: Mapped[str] = mapped_column(String(255), nullable=False)
+    parent_id: Mapped[int | None] = mapped_column(ForeignKey("departments.id"), nullable=True)
 
     team_structure: Mapped["TeamStructure"] = relationship("TeamStructure", back_populates="departments")
     division: Mapped[Optional["Division"]] = relationship("Division", back_populates="departments")
@@ -62,16 +68,19 @@ class Department(Base):
 
     __table_args__ = (UniqueConstraint("team_id", "name", name="uq_department_team_name"),)
 
+    def __repr__(self):
+        return f"{self.__class__.__name__}(id={self.id}, team_id={self.team_id}, name={self.name})"
+
 
 class EmployeeStructure(Base):
     """Структура сотрудников"""
 
     __tablename__ = "employee_structure"
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    employee_id: Mapped[int] = mapped_column(Integer, nullable=False)  # Ссылка на User Service
-    department_id: Mapped[Optional[int]] = mapped_column(ForeignKey("departments.id"), nullable=True)
-    role: Mapped[str] = mapped_column(String, nullable=False)
+    id: Mapped[int] = mapped_column(primary_key=True)
+    employee_id: Mapped[int]  # Ссылка на User Service
+    department_id: Mapped[int | None] = mapped_column(ForeignKey("departments.id"), nullable=True)
+    role: Mapped[str] = mapped_column(String(255), nullable=False)
     manager_id: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)  # Основной руководитель
 
     department: Mapped[Optional["Department"]] = relationship("Department", back_populates="employees")
@@ -79,15 +88,24 @@ class EmployeeStructure(Base):
 
     __table_args__ = (UniqueConstraint("employee_id", "department_id", name="uq_employee_department"),)
 
+    def __repr__(self):
+        return f"{self.__class__.__name__}(id={self.id}, employee_id={self.employee_id})"
+
 
 class EmployeeManagers(Base):
     """Дополнительные руководители (для матричной структуры)"""
 
     __tablename__ = "employee_managers"
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    id: Mapped[int] = mapped_column(primary_key=True)
     employee_structure_id: Mapped[int] = mapped_column(ForeignKey("employee_structure.id"), nullable=False)
-    manager_id: Mapped[int] = mapped_column(Integer, nullable=False)  # Ссылка на User Service
-    context: Mapped[str] = mapped_column(String, nullable=False)  # "project", "function" и т.д.
+    manager_id: Mapped[int]  # Ссылка на User Service
+    context: Mapped[str]  # "project", "function" и т.д.
 
     employee: Mapped["EmployeeStructure"] = relationship("EmployeeStructure", back_populates="extra_managers")
+
+    def __repr__(self):
+        return (
+            f"{self.__class__.__name__}"
+            f"(id={self.id}, employee_structure_id={self.employee_structure_id}, manager_id={self.manager_id})"
+        )
