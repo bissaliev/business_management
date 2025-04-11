@@ -6,7 +6,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import get_session
 from app.models import EmployeeManagers
 from app.routers.dependencies import EmployeeServiceDeps
-from app.schemas.employees import EmployeeManagerCreate, EmployeeResponse, EmployeeStructureCreate
+from app.schemas.employees import (
+    EmployeeManagerCreate,
+    EmployeeResponse,
+    EmployeeStructureCreate,
+    EmployeeStructureUpdate,
+)
 
 router = APIRouter()
 
@@ -43,3 +48,11 @@ async def get_department_employees(
 ) -> list[EmployeeResponse]:
     employees = await employee_service.get_department_employees(department_id)
     return employees
+
+
+@router.put("/{id}", summary="Обновление данных сотрудника")
+async def update_employees(
+    id: int, employee_data: EmployeeStructureUpdate, employee_service: EmployeeServiceDeps
+) -> EmployeeResponse:
+    employee = await employee_service.update_employee(id, employee_data.model_dump(exclude_unset=True))
+    return employee
