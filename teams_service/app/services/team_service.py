@@ -56,3 +56,6 @@ class TeamService:
     async def get_teams(self) -> list[Team]:
         teams = await self.repo.get_all()
         return teams
+
+    async def get_one(self, team_id: int) -> Team:
+        return await self.repo.get(team_id)
