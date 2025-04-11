@@ -1,4 +1,6 @@
-from pydantic import UUID4, BaseModel
+from uuid import UUID
+
+from pydantic import BaseModel
 
 from app.models.teams import EmployeeRole
 
@@ -12,7 +14,7 @@ class TeamResponse(BaseModel):
     id: int
     name: str
     description: str
-    team_code: UUID4
+    team_code: UUID
 
     model_config = {"from_attributes": True}
 
