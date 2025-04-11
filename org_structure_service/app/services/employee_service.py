@@ -75,3 +75,10 @@ class EmployeeService:
     async def get_department_employees(self, department_id: int) -> list[EmployeeStructure]:
         """Получить список сотрудников по идентификатору департамента"""
         return await self.repo.get_department_employees(department_id)
+
+    async def get_employee(self, id: int) -> EmployeeStructure:
+        """Получить сотрудника"""
+        employee = await self.repo.get(id)
+        if employee is None:
+            raise HTTPException(status_code=404, detail="Работника не существует в организационной структуре")
+        return employee
