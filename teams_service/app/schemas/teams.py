@@ -21,4 +21,16 @@ class TeamResponse(BaseModel):
 
 class AddEmployee(BaseModel):
     employee_id: int
-    employee_role: EmployeeRole = EmployeeRole.EMPLOYEE
+    role: EmployeeRole = EmployeeRole.EMPLOYEE
+
+
+class TeamUpdate(BaseModel):
+    name: str | None = None
+    description: str | None = None
+
+
+class TeamEmployeeResponse(BaseModel):
+    id: int
+    employee_id: int
+    team_id: int
+    role: EmployeeRole
