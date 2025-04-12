@@ -2,7 +2,7 @@ import enum
 import uuid
 from datetime import datetime
 
-from sqlalchemy import TEXT, DateTime, Enum, ForeignKey, String
+from sqlalchemy import TEXT, DateTime, Enum, ForeignKey, String, UniqueConstraint
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -30,6 +30,8 @@ class TeamEmployee(Base):
     employee_id: Mapped[int]
     team_id: Mapped[int] = mapped_column(ForeignKey("teams.id"))
     role: Mapped[EmployeeRole] = mapped_column(Enum(EmployeeRole, native_enum=False), default=EmployeeRole.EMPLOYEE)
+
+    __table_args__ = (UniqueConstraint("employee_id", "team_id", name="uq_employee_team"),)
 
 
 class TeamNews(Base):
