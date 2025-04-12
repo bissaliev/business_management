@@ -1,4 +1,4 @@
-from sqlalchemy import exists, insert, select, update
+from sqlalchemy import delete, exists, insert, select, update
 
 from app.models.teams import TeamEmployee
 from app.repositories.base_repository import BaseRepository
@@ -43,3 +43,9 @@ class TeamEmployeeRepository(BaseRepository):
         )
         result = await self.session.scalars(stmt)
         return result.first()
+
+    async def delete_employee(self, team_id: int, employee_id: int) -> bool:
+        """Удаление роли работника команды"""
+        stmt = delete(self.model).where(self.model.team_id == team_id, self.model.employee_id == employee_id)
+        result = await self.session.execute(stmt)
+        return result.rowcount > 0
