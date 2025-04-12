@@ -1,4 +1,4 @@
-from sqlalchemy import insert, select
+from sqlalchemy import insert, select, update
 
 from app.models.teams import TeamEmployee
 from app.repositories.base_repository import BaseRepository
@@ -23,5 +23,15 @@ class TeamEmployeeRepository(BaseRepository):
 
     async def add_employee_to_team(self, team_id: int, data: dict) -> TeamEmployee:
         stmt = insert(self.model).values(team_id=team_id, **data).returning(self.model)
+        result = await self.session.scalars(stmt)
+        return result.first()
+
+    async def update_role(self, team_id: int, employee_id: int, role: dict) -> TeamEmployee:
+        stmt = (
+            update(self.model)
+            .where(self.model.team_id == team_id, self.model.employee_id == employee_id)
+            .values(**role)
+            .returning(self.model)
+        )
         result = await self.session.scalars(stmt)
         return result.first()
