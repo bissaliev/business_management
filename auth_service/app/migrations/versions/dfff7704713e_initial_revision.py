@@ -1,8 +1,8 @@
-"""User create
+"""Initial revision
 
-Revision ID: 346f906f3e8e
+Revision ID: dfff7704713e
 Revises: 
-Create Date: 2025-04-06 06:43:28.713222
+Create Date: 2025-04-13 08:26:36.625389
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '346f906f3e8e'
+revision: str = 'dfff7704713e'
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -25,11 +25,10 @@ def upgrade() -> None:
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
     sa.Column('name', sa.String(length=250), nullable=False),
     sa.Column('email', sa.String(length=150), nullable=False),
-    sa.Column('status', sa.Enum('USER', 'ADMIN', name='status'), nullable=False),
+    sa.Column('status', sa.Enum('USER', 'ADMIN', name='status', native_enum=False), nullable=False),
     sa.Column('hashed_password', sa.String(), nullable=False),
     sa.Column('is_active', sa.Boolean(), nullable=False),
     sa.Column('deleted_at', sa.DateTime(), nullable=True),
-    sa.Column('team_id', sa.Integer(), nullable=False),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_index(op.f('ix_users_email'), 'users', ['email'], unique=True)
