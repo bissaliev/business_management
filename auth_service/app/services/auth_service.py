@@ -45,7 +45,7 @@ class AuthService:
         if not user.is_active:
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Inactive user")
         data = {"sub": user.email, "id": user.id, "status": user.status.value}
-        role = await self.team_client.get_employees_role(user.id)
+        role = await self.team_client.get_employee(user.id, user.team_id)
         data |= role
         access_token = create_access_token(data=data)
         return Token(access_token=access_token, token_type="bearer")
