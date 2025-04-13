@@ -22,7 +22,7 @@ class TeamEmployeeService:
         team = await self._get_team_by_team_code(team_code)
         if not team:
             raise HTTPException(status_code=404, detail="Неверный идентификационный код команды")
-        new_user = await self.user_client.create_user(**data)
+        new_user = await self.user_client.create_user(**data, team_id=team.id)
         new_employee = await self.repo.add_employee_to_team(team.id, {"employee_id": new_user.id})
         return new_employee
 
