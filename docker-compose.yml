@@ -13,12 +13,12 @@ services:
             start_period: 5s
 
     auth_service:
-      build: ./auth_service
-      env_file:
-        - ./auth_service/.env
-      ports:
-        - "8001:8000"
-      depends_on:
+        build: ./auth_service
+        env_file:
+            - ./auth_service/.env
+        ports:
+            - "8001:8000"
+        depends_on:
             auth_db:
                 condition: service_healthy
 
@@ -36,13 +36,13 @@ services:
             start_period: 5s
 
     teams_service:
-      build: ./teams_service
-      env_file:
-        - ./teams_service/.env
-      ports:
-        - "8002:8000"
+        build: ./teams_service
+        env_file:
+            - ./teams_service/.env
+        ports:
+            - "8002:8000"
 
-      depends_on:
+        depends_on:
             team_db:
                 condition: service_healthy
 
@@ -69,3 +69,14 @@ services:
         depends_on:
             org_structure_db:
                 condition: service_healthy
+
+    nginx:
+        image: nginx:latest
+        volumes:
+            - ./nginx/default.conf:/etc/nginx/nginx.conf
+        ports:
+            - "80:80"
+        depends_on:
+            - auth_service
+            - teams_service
+            - org_structure_service
