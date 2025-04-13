@@ -6,7 +6,7 @@ from app.admin.views import UserAdmin
 from app.database import async_engine
 from app.routers.users import router as user_router
 
-app = FastAPI()
+app = FastAPI(root_path="/users")
 
 admin = Admin(app, async_engine, authentication_backend=authentication_backend)
 
