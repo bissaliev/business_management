@@ -1,31 +1,33 @@
 from fastapi import APIRouter
 
 from app.routers.dependencies import UserServiceDeps
-from app.schemas.users import UserCreate, UserUpdate
+from app.schemas.users import Message, UserResponse, UserUpdate
 
 router = APIRouter()
 
 
-@router.post("/register")
-async def register_user(user_service: UserServiceDeps, user_data: UserCreate) -> dict[str, str]:
-    user = await user_service.create(user_data.model_dump())
-    if user:
-        return {"message": "User created"}
+@router.get("/", summary="Получение пользователей")
+async def get_users(user_service: UserServiceDeps) -> list[UserResponse]:
+    return await user_service.get_users()
 
 
-@router.put("/{id}")
-async def update_user(id: int, user_service: UserServiceDeps, user_data: UserUpdate):
-    await user_service.update(id, user_data.model_dump(exclude_unset=True))
-    return {"message": "User updated"}
+@router.get("/{id}", summary="Получение пользователя")
+async def get_user(id: int, user_service: UserServiceDeps) -> UserResponse:
+    return await user_service.get_user(id)
 
 
-@router.delete("/{id}")
-async def delete_user(id: int, user_service: UserServiceDeps):
+@router.put("/{id}", summary="Обновление данных пользователя")
+async def update_user(id: int, user_data: UserUpdate, user_service: UserServiceDeps) -> UserResponse:
+    return await user_service.update(id, user_data.model_dump(exclude_unset=True))
+
+
+@router.delete("/{id}", summary="Удаление пользователя с возможность восстановления")
+async def soft_delete_user(id: int, user_service: UserServiceDeps) -> Message:
     await user_service.soft_delete_user(id)
-    return {"message": "User deleted"}
+    return Message(message="Пользователь временно удален")
 
 
-@router.post("/restore/{id}")
-async def restore_user(id: int, user_service: UserServiceDeps):
+@router.post("/{id}/restore", summary="Восстановление пользователя")
+async def restore_user(id: int, user_service: UserServiceDeps) -> Message:
     await user_service.restore_user(id)
-    return {"message": "User restored"}
+    return Message(message="Пользователь восстановлен")
