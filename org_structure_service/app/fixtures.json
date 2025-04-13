@@ -1,81 +1,81 @@
 {
     "team_structure": [
         {
-            "team_id": 100,
+            "team_id": 1,
             "structure_type": "Линейная"
         },
         {
-            "team_id": 200,
+            "team_id": 2,
             "structure_type": "Функциональная"
         },
         {
-            "team_id": 300,
+            "team_id": 3,
             "structure_type": "Матричная"
         },
         {
-            "team_id": 400,
+            "team_id": 4,
             "structure_type": "Дивизиональная"
         },
         {
-            "team_id": 500,
+            "team_id": 5,
             "structure_type": "Линейно-функциональная"
         }
     ],
     "divisions": [
         {
-            "team_id": 400,
+            "team_id": 4,
             "name": "Продукт A"
         },
         {
-            "team_id": 400,
+            "team_id": 4,
             "name": "Продукт B"
         }
     ],
     "departments": [
         {
-            "team_id": 100,
+            "team_id": 1,
             "division_id": null,
             "name": "Разработка",
             "parent_id": null
         },
         {
-            "team_id": 200,
+            "team_id": 2,
             "division_id": null,
             "name": "Разработка",
             "parent_id": null
         },
         {
-            "team_id": 200,
+            "team_id": 2,
             "division_id": null,
             "name": "Тестирование",
             "parent_id": null
         },
         {
-            "team_id": 300,
+            "team_id": 3,
             "division_id": null,
             "name": "Разработка",
             "parent_id": null
         },
         {
-            "team_id": 400,
+            "team_id": 4,
             "division_id": 1,
             "name": "Разработка A",
             "parent_id": null
         },
         {
-            "team_id": 400,
+            "team_id": 4,
             "division_id": 2,
             "name": "Разработка B",
             "parent_id": null
         },
         {
-            "team_id": 500,
+            "team_id": 5,
             "division_id": null,
             "name": "Разработка",
             "parent_id": null
         },
         {
-            "team_id": 500,
+            "team_id": 5,
             "division_id": null,
             "name": "Тестирование",
             "parent_id": null

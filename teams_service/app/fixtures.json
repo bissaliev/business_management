@@ -14,36 +14,46 @@
             "name": "DevOps Team",
             "description": "Команда настройки серверов и CI/CD",
             "team_code": "f47ac10b-58cc-4372-a567-0e02b2c3d479"
+        },
+        {
+            "name": "Team 4",
+            "description": "Команда 4",
+            "team_code": "f47ac20b-58cc-4372-a567-0e02b2c3d479"
+        },
+        {
+            "name": "Team 5",
+            "description": "Команда 5",
+            "team_code": "f47ac30b-58cc-4372-a567-0e02b2c3d479"
         }
     ],
     "team_employee": [
         {
-            "employee_id": 101,
+            "employee_id": 1,
             "team_id": 1,
             "role": "админ"
         },
         {
-            "employee_id": 102,
+            "employee_id": 2,
             "team_id": 1,
             "role": "менеджер"
         },
         {
-            "employee_id": 103,
+            "employee_id": 3,
             "team_id": 1,
             "role": "сотрудник"
         },
         {
-            "employee_id": 104,
+            "employee_id": 4,
             "team_id": 2,
             "role": "менеджер"
         },
         {
-            "employee_id": 105,
+            "employee_id": 5,
             "team_id": 2,
             "role": "сотрудник"
         },
         {
-            "employee_id": 106,
+            "employee_id": 6,
             "team_id": 3,
             "role": "сотрудник"
         }

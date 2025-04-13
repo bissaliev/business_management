@@ -3,7 +3,7 @@
         "name": "Иван Иванов",
         "email": "ivan.ivanov@example.com",
         "status": "пользователь",
-        "hashed_password": "$2b$12$X0gXJ7J5Qz4Z5z5K2h8e0e5Qz3Z7Qz3Qz3Qz3Qz3Qz3Qz3Qz3Qz3Qz",
+        "password": "password",
         "is_active": true,
         "deleted_at": null
     },
@@ -11,7 +11,7 @@
         "name": "Анна Петрова",
         "email": "anna.petrova@example.com",
         "status": "админ",
-        "hashed_password": "$2b$12$Y1hYK8K6Rz5Z5z5K2h8e0e5Qz3Z7Qz3Qz3Qz3Qz3Qz3Qz3Qz3Qz3Qz",
+        "password": "password",
         "is_active": true,
         "deleted_at": null
     },
@@ -19,7 +19,7 @@
         "name": "Пётр Сидоров",
         "email": "petr.sidorov@example.com",
         "status": "пользователь",
-        "hashed_password": "$2b$12$Z2iZL9L7Sz5Z5z5K2h8e0e5Qz3Z7Qz3Qz3Qz3Qz3Qz3Qz3Qz3Qz3Qz",
+        "password": "password",
         "is_active": true,
         "deleted_at": null
     },
@@ -27,14 +27,14 @@
         "name": "Мария Кузнецова",
         "email": "maria.kuznetsova@example.com",
         "status": "пользователь",
-        "hashed_password": "$2b$12$A3jAM0M8Tz5Z5z5K2h8e0e5Qz3Z7Qz3Qz3Qz3Qz3Qz3Qz3Qz3Qz3Qz",
+        "password": "password",
         "is_active": false
     },
     {
         "name": "Алексей Смирнов",
         "email": "alexey.smirnov@example.com",
         "status": "админ",
-        "hashed_password": "$2b$12$B4kBN1N9Uz5Z5z5K2h8e0e5Qz3Z7Qz3Qz3Qz3Qz3Qz3Qz3Qz3Qz3Qz",
+        "password": "password",
         "is_active": true,
         "deleted_at": null
     }
