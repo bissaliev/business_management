@@ -13,6 +13,10 @@ class UserService:
         self.session = session
         self.repo = UserRepository(session)
 
+    async def get_users(self) -> list[User]:
+        """Получение всех пользователей"""
+        return await self.repo.get_all()
+
     async def create(self, user_data: dict):
         """Создание пользователя"""
         if await self.repo.get_user_by_email(user_data["email"]):
@@ -23,20 +27,27 @@ class UserService:
         user_data["hashed_password"] = hashed_password
         return await self.repo.create(user_data)
 
-    async def update(self, id: int, user_data: dict):
+    async def get_user(self, id: int) -> User:
+        """Получение одного пользователя"""
+        user = await self.repo.get(id)
+        if not user:
+            raise HTTPException(status_code=404, detail="Пользователь не найден")
+        return user
+
+    async def update(self, id: int, user_data: dict) -> User:
         """Обновление данных пользователя"""
         if not await self.repo.exists(id):
             raise HTTPException(status_code=404, detail="Пользователь не найден")
         return await self.repo.update(id, user_data)
 
-    async def soft_delete_user(self, id: int) -> User:
+    async def soft_delete_user(self, id: int) -> None:
         """Удаление пользователя с возможностью восстановления"""
         if not await self.repo.exists(id):
             raise HTTPException(status_code=404, detail="Пользователь не найден")
-        return await self.repo.soft_delete(id)
+        await self.repo.soft_delete(id)
 
-    async def restore_user(self, id: int) -> User:
+    async def restore_user(self, id: int) -> None:
         """Восстановление пользователя"""
         if not await self.repo.exists(id):
             raise HTTPException(status_code=404, detail="Пользователь не найден")
-        return await self.repo.restore(id)
+        await self.repo.restore(id)
