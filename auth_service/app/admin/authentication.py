@@ -5,7 +5,7 @@ from starlette.requests import Request
 from app.auth import create_access_token, verify_password
 from app.config import settings
 from app.database import SessionLocal
-from app.services import UserService
+from app.services.user_service import UserService
 
 
 class AdminAuth(AuthenticationBackend):
