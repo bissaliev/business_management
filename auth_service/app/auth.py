@@ -6,7 +6,7 @@ from passlib.context import CryptContext
 
 from app.config import settings
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/token")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/users/auth/token")
 
 
 SECRET_KEY = settings.SECRET_KEY
