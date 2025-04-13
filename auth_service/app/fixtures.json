@@ -5,7 +5,8 @@
         "status": "пользователь",
         "password": "password",
         "is_active": true,
-        "deleted_at": null
+        "deleted_at": null,
+        "team_id": 1
     },
     {
         "name": "Анна Петрова",
@@ -13,7 +14,8 @@
         "status": "админ",
         "password": "password",
         "is_active": true,
-        "deleted_at": null
+        "deleted_at": null,
+        "team_id": 1
     },
     {
         "name": "Пётр Сидоров",
@@ -21,14 +23,16 @@
         "status": "пользователь",
         "password": "password",
         "is_active": true,
-        "deleted_at": null
+        "deleted_at": null,
+        "team_id": 1
     },
     {
         "name": "Мария Кузнецова",
         "email": "maria.kuznetsova@example.com",
         "status": "пользователь",
         "password": "password",
-        "is_active": false
+        "is_active": false,
+        "team_id": 1
     },
     {
         "name": "Алексей Смирнов",
@@ -36,6 +40,7 @@
         "status": "админ",
         "password": "password",
         "is_active": true,
-        "deleted_at": null
+        "deleted_at": null,
+        "team_id": 1
     }
 ]

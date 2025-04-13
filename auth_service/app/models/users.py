@@ -22,3 +22,4 @@ class User(Base):
     hashed_password: Mapped[str] = mapped_column(String, nullable=False)
     is_active: Mapped[bool] = mapped_column(default=True)
     deleted_at: Mapped[datetime | None] = None
+    team_id: Mapped[int]
