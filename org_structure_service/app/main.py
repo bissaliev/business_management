@@ -5,7 +5,7 @@ from app.routers.divisions import router as division_router
 from app.routers.employees import router as employee_router
 from app.routers.structures import router as structure_router
 
-app = FastAPI()
+app = FastAPI(root_path="/org")
 
 app.include_router(structure_router, prefix="/structures", tags=["structures"])
 app.include_router(division_router, prefix="/divisions", tags=["divisions"])
