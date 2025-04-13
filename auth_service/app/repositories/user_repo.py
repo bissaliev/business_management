@@ -11,19 +11,17 @@ class UserRepository(BaseRepository):
 
     model = User
 
-    async def get_user_by_email(self, email: str) -> User:
+    async def get_user_by_email(self, email: str) -> User | None:
         """Получение пользователя по полю email"""
         result = await self.session.scalars(select(self.model).where(self.model.email == email))
         return result.first()
 
-    async def soft_delete(self, id: int) -> User | None:
+    async def soft_delete(self, id: int) -> None:
         """Удаление пользователя с возможностью восстановления"""
         stmt = update(self.model).where(self.model.id == id).values(is_active=False, deleted_at=datetime.now())
-        result = await self.session.scalars(stmt)
-        return result.first()
+        await self.session.scalars(stmt)
 
-    async def restore(self, id: int) -> User | None:
+    async def restore(self, id: int) -> None:
         """Восстановление пользователя"""
         stmt = update(self.model).where(self.model.id == id).values(is_active=True, deleted_at=None)
-        result = await self.session.scalars(stmt)
-        return result.first()
+        await self.session.scalars(stmt)
