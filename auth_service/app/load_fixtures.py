@@ -1,6 +1,7 @@
 import asyncio
 import json
 
+from app.auth import get_password_hash
 from app.database import SessionLocal, async_engine
 from app.models.users import Base, User
 
@@ -21,6 +22,8 @@ async def load_fixtures(data: dict):
     async with SessionLocal() as session:
         # Загружаем User
         for ts_data in data:
+            password = ts_data.pop("password")
+            ts_data["hashed_password"] = get_password_hash(password)
             ts = User(**ts_data)
             session.add(ts)
         await session.commit()
