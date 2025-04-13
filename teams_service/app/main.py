@@ -7,7 +7,7 @@ from app.routers.employees import router as employee_router
 from app.routers.team_news import router as team_news_router
 from app.routers.teams import router as team_router
 
-app = FastAPI()
+app = FastAPI(root_path="/teams")
 admin = Admin(app, async_engine)
 
 admin.add_view(TeamAdmin)
