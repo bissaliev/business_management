@@ -1,7 +1,7 @@
 from sqladmin import ModelView
 
-from app.auth import get_password_hash
 from app.models.users import User
+from app.security import get_password_hash
 
 
 class UserAdmin(ModelView, model=User):

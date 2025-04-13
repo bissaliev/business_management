@@ -3,10 +3,10 @@ from typing import Annotated
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.auth import oauth2_scheme
 from app.clients.team_client import TeamServiceClient
 from app.database import get_session
 from app.models.users import User
+from app.security import oauth2_scheme
 from app.services.auth_service import AuthService
 from app.services.user_service import UserService
 

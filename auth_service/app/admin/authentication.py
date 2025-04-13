@@ -2,9 +2,9 @@ from jose import JWTError, jwt
 from sqladmin.authentication import AuthenticationBackend
 from starlette.requests import Request
 
-from app.auth import create_access_token, verify_password
 from app.config import settings
 from app.database import SessionLocal
+from app.security import create_access_token, verify_password
 from app.services.user_service import UserService
 
 
