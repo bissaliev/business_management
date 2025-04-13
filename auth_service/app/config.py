@@ -18,8 +18,8 @@ class Setting(BaseSettings):
     def get_db_postgres_url(self):
         return f"postgresql+asyncpg://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.DB_HOST}:{self.DB_PORT}/{self.POSTGRES_DB}"
 
-    def get_team_by_code_url(self):
-        return f"http://{self.TEAM_HOST}:{self.TEAM_PORT}/teams/by-code"
+    def get_team_url(self):
+        return f"http://{self.TEAM_HOST}:{self.TEAM_PORT}/teams"
 
 
 settings = Setting()
