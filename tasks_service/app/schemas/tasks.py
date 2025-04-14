@@ -7,6 +7,8 @@ from app.models.tasks import TaskStatus
 
 
 class TaskCreate(BaseModel):
+    """Создание задач"""
+
     title: str
     description: Optional[str] = None
     due_date: Optional[datetime] = None
@@ -15,6 +17,8 @@ class TaskCreate(BaseModel):
 
 
 class TaskUpdate(BaseModel):
+    """Обновление задач"""
+
     title: Optional[str] = None
     description: Optional[str] = None
     status: Optional[TaskStatus] = None
