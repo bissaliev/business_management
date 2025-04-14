@@ -70,6 +70,30 @@ services:
             org_structure_db:
                 condition: service_healthy
 
+    tasks_db:
+        image: postgres
+        ports:
+            - "5432:5432"
+        env_file:
+            - ./tasks_service/.env
+        healthcheck:
+            test: ["CMD-SHELL", "pg_isready -U postgres"]
+            interval: 5s
+            timeout: 5s
+            retries: 5
+            start_period: 5s
+
+    tasks_service:
+        build: ./tasks_service
+        env_file:
+            - ./tasks_service/.env
+        ports:
+            - "8004:8000"
+
+        depends_on:
+            tasks_db:
+                condition: service_healthy
+
     nginx:
         image: nginx:latest
         volumes:
