@@ -1,5 +1,5 @@
 # task_service/models/comment.py
-from datetime import datetime, timezone
+from datetime import datetime
 
 from sqlalchemy import ForeignKey, Text
 from sqlalchemy.orm import Mapped, mapped_column
@@ -14,4 +14,4 @@ class Comment(Base):
     task_id: Mapped[int] = mapped_column(ForeignKey("tasks.id", ondelete="CASCADE"), nullable=False)
     user_id: Mapped[int]  # Автор комментария
     content: Mapped[str] = mapped_column(Text, nullable=False)
-    created_at: Mapped[datetime] = mapped_column(default=lambda: datetime.now(timezone.utc))
+    created_at: Mapped[datetime] = mapped_column(default=datetime.now)
