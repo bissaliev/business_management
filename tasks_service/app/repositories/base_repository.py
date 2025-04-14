@@ -21,7 +21,7 @@ class BaseRepository(Generic[ModelType]):
         result = await self.session.scalars(stmt)
         return result.first()
 
-    async def create(self, data: dict) -> ModelType:
+    async def create(self, **data: dict) -> ModelType:
         stmt = insert(self.model).values(**data).returning(self.model)
         result = await self.session.execute(stmt)
         return result.scalar_one_or_none()
@@ -31,7 +31,7 @@ class BaseRepository(Generic[ModelType]):
         result = await self.session.scalars(stmt)
         return result.all()
 
-    async def update(self, reference: int, update_data: dict) -> ModelType | None:
+    async def update(self, reference: int, **update_data: dict) -> ModelType | None:
         stmt = update(self.model).where(self.model.id == reference).values(**update_data).returning(self.model)
         result = await self.session.execute(stmt)
         return result.scalar_one_or_none()

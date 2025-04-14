@@ -35,7 +35,7 @@ class TaskService:
             )
         task_data |= {"creator_id": user.id}
         try:
-            task = await self.repo.create(task_data)
+            task = await self.repo.create(**task_data)
             return task
         except SQLAlchemyError as e:
             HTTPException(status_code=500, detail=str(e))
@@ -50,7 +50,7 @@ class TaskService:
             if not membership:
                 raise HTTPException(status_code=400, detail="Новый исполнитель не является членом команды")
 
-        updated_task = await self.repo.update(task_id, update_data)
+        updated_task = await self.repo.update(task_id, **update_data)
         return updated_task
 
     async def delete_task(self, task_id: int) -> None:
