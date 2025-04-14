@@ -11,6 +11,7 @@ from app.database import get_session
 # from app.clients.team_client import TeamServiceClient
 from app.models.tasks import Task
 from app.schemas.users import EmployeeRole, User
+from app.services.comment_service import CommentService
 from app.services.task_service import TaskService
 
 # oauth2_scheme = OAuth2PasswordBearer(tokenUrl="http://auth_service:8000/users/auth/token")
@@ -25,10 +26,21 @@ async def task_service(session: Annotated[AsyncSession, Depends(get_session)]):
 TaskServiceDeps = Annotated[TaskService, Depends(task_service)]
 
 
-async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]) -> User:
+async def comment_service(session: Annotated[AsyncSession, Depends(get_session)]):
+    """Функция для внедрения в зависимости сервис TaskService"""
+    return CommentService(session)
+
+
+CommentServiceDeps = Annotated[CommentService, Depends(comment_service)]
+
+UserClientDeps = Annotated[UserServiceClient, Depends(lambda: UserServiceClient())]
+
+
+async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)], user_client: UserClientDeps) -> User:
     """Проверяет токен через User Service, возвращает данные (id, status, team_role)."""
-    user_client = UserServiceClient()
     user_data = await user_client.verify_token(token)
+    # user_data["id"] = 100
+    # user_data["team_id"] = 100
     if not user_data["is_active"]:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Inactive user")
     return User.model_validate(user_data)
@@ -94,7 +106,7 @@ async def check_team_member_list(
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Вы не являетесь членом команды")
 
 
-def check_member(detail: bool = True):
+def check_team_member(detail: bool = True):
     """
     Функция для динамического определения зависимости.
     check_team_member_detail: проверяет доступ на основе запрошенной задачи
@@ -105,4 +117,13 @@ def check_member(detail: bool = True):
     return Depends(check_team_member_list)
 
 
-MemberPermission = check_member
+TeamMemberPermission = check_team_member
+
+
+async def require_task_members(task: CurrentTask, user: CurrentUser) -> None:
+    """Разрешает действия только участникам задачи."""
+    if not (task.creator_id == user.id or task.assignee_id == user.id):
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Не достаточно прав доступа")
+
+
+TaskMemberPermission = Depends(require_task_members)
