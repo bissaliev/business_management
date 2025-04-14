@@ -2,4 +2,6 @@ from pydantic import BaseModel
 
 
 class MessageDelete(BaseModel):
-    message: str = "Задача удалена"
+    """Сообщение об удалении"""
+
+    message: str = "Запись удалена"
