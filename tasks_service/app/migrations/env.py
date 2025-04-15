@@ -7,6 +7,7 @@ from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
 
 import app.models.comments  # noqa: F401
+import app.models.task_evaluation  # noqa: F401
 import app.models.tasks  # noqa: F401
 from app.database import DATABASE_URL, Base
 
