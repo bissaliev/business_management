@@ -73,4 +73,20 @@ class AuthService:
             raise HTTPException(status_code=403, detail="Not enough permissions")
         return user
 
-    async def verify_token(): ...
+    async def verify_token(self, token: str):
+        """
+        Проверяет JWT-токен и возвращает данные пользователя.
+        """
+        user = await self.get_current_user(token)
+        role = decode_access_token(token)["role"]
+
+        response = {
+            "id": user.id,
+            "email": user.email,
+            "status": user.status.value,
+            "is_active": user.is_active,
+            "team_id": user.team_id,
+            "role": role,
+        }
+
+        return response
