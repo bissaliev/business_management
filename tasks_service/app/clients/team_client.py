@@ -3,13 +3,13 @@ from fastapi import HTTPException
 
 from app.config import settings
 
-BASE_TEAM_URL1 = settings.get_team_url()
-BASE_TEAM_URL = "http://localhost:8002/teams"
+BASE_TEAM_URL = settings.get_team_url()
 
 
 class TeamServiceClient:
     def __init__(self, base_url: str = BASE_TEAM_URL):
         self.base_url = base_url
+        self.client = httpx.AsyncClient()
 
     async def get_employee(self, team_id: int, user_id: int):
         """Получение работника из Team Service"""
@@ -20,11 +20,29 @@ class TeamServiceClient:
                 return response.json()
         except httpx.HTTPStatusError as e:
             if e.response.status_code == 404:
-                return {}
-                # raise HTTPException(status_code=404, detail=f"Работник с {user_id} не существует") from e
+                # return {}
+                raise HTTPException(status_code=404, detail=f"Работник с {user_id} не существует") from e
             raise HTTPException(
                 status_code=500,
                 detail=f"Ошибка при получении работника: {e.response.status_code}, {e.response.text}",
             ) from e
         except httpx.ConnectError as e:
             raise HTTPException(status_code=503, detail="Сервис Team service не доступен") from e
+
+    async def get_membership(self, user_id: int, team_id: int) -> dict:
+        try:
+            response = await self.client.get(f"{self.base_url}/api/v1/teams/{team_id}/members/{user_id}")
+            response.raise_for_status()
+            return response.json()
+        except httpx.HTTPStatusError as e:
+            if e.response.status_code == 404:
+                return {}
+            raise HTTPException(status_code=e.response.status_code, detail="Team service error") from e
+
+    async def get_team_members(self, team_id: int) -> list[dict]:
+        try:
+            response = await self.client.get(f"{self.base_url}/api/v1/teams/{team_id}/members")
+            response.raise_for_status()
+            return response.json()
+        except httpx.HTTPStatusError as e:
+            raise HTTPException(status_code=e.response.status_code, detail="Team service error") from e

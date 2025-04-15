@@ -8,10 +8,7 @@ class Base(DeclarativeBase):
     pass
 
 
-# DATABASE_URL = settings.get_db_postgres_url()
-DATABASE_URL = (
-    f"postgresql+asyncpg://{settings.POSTGRES_USER}:{settings.POSTGRES_PASSWORD}@localhost:5432/{settings.POSTGRES_DB}"
-)
+DATABASE_URL = settings.get_db_postgres_url()
 
 async_engine = create_async_engine(url=DATABASE_URL, future=True, echo=True)
 

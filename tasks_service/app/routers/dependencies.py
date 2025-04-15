@@ -8,15 +8,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.clients.user_client import UserServiceClient
 from app.database import get_session
 
-# from app.clients.team_client import TeamServiceClient
 from app.models.tasks import Task
 from app.schemas.users import EmployeeRole, User
 from app.services.comment_service import CommentService
 from app.services.task_evaluation_service import TaskEvaluationService
 from app.services.task_service import TaskService
 
-# oauth2_scheme = OAuth2PasswordBearer(tokenUrl="http://auth_service:8000/users/auth/token")
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="http://localhost:8001/users/auth/token")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="http://127.0.0.1/users/auth/token")
+# oauth2_scheme = OAuth2PasswordBearer(tokenUrl="http://localhost:8001/users/auth/token")
 
 
 async def task_service(session: Annotated[AsyncSession, Depends(get_session)]):

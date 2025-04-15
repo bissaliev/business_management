@@ -4,8 +4,6 @@ from fastapi import HTTPException
 from app.config import settings
 
 BASE_ORG_URL = settings.get_org_url()
-# TODO: Убрать заглушку
-BASE_ORG_URL = "http://localhost:8003/org"
 
 
 class OrgServiceClient:
@@ -28,4 +26,4 @@ class OrgServiceClient:
                 detail=f"Ошибка при получении работника: {e.response.status_code}, {e.response.text}",
             ) from e
         except httpx.ConnectError as e:
-            raise HTTPException(status_code=503, detail="Сервис Team service не доступен") from e
+            raise HTTPException(status_code=503, detail="Сервис Org Structure service не доступен") from e
