@@ -12,6 +12,7 @@ from app.database import get_session
 from app.models.tasks import Task
 from app.schemas.users import EmployeeRole, User
 from app.services.comment_service import CommentService
+from app.services.task_evaluation_service import TaskEvaluationService
 from app.services.task_service import TaskService
 
 # oauth2_scheme = OAuth2PasswordBearer(tokenUrl="http://auth_service:8000/users/auth/token")
@@ -33,6 +34,14 @@ async def comment_service(session: Annotated[AsyncSession, Depends(get_session)]
 
 CommentServiceDeps = Annotated[CommentService, Depends(comment_service)]
 
+
+async def evaluation_service(session: Annotated[AsyncSession, Depends(get_session)]):
+    """Функция для внедрения в зависимости сервис TaskService"""
+    return TaskEvaluationService(session)
+
+
+TaskEvaluationServiceDeps = Annotated[TaskEvaluationService, Depends(evaluation_service)]
+
 UserClientDeps = Annotated[UserServiceClient, Depends(lambda: UserServiceClient())]
 
 
@@ -53,7 +62,7 @@ async def require_manager_or_admin(user: Annotated[User, Depends(get_current_use
     """
     Разрешает действия только админам руководителям команды (role="менеджер", "админ")"""
     if not user.team_id:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Вы не являетесь членом команды")
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Не достаточно прав")
     if user.role not in [EmployeeRole.MANAGER, EmployeeRole.ADMINISTRATOR]:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Не достаточно прав")
     return user
