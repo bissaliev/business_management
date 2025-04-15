@@ -4,6 +4,8 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Setting(BaseSettings):
     TEAM_HOST: str
     TEAM_PORT: str
+    ORG_HOST: str
+    ORG_PORT: str
     USER_HOST: str
     USER_PORT: str
     POSTGRES_USER: str
@@ -22,6 +24,9 @@ class Setting(BaseSettings):
 
     def get_user_url(self):
         return f"http://{self.USER_HOST}:{self.USER_PORT}/users"
+
+    def get_org_url(self):
+        return f"http://{self.ORG_HOST}:{self.ORG_PORT}/org"
 
 
 settings = Setting()
