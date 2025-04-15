@@ -85,91 +85,91 @@
         {
             "employee_id": 2,
             "department_id": 1,
-            "role": "manager",
+            "position": "manager",
             "manager_id": null
         },
         {
             "employee_id": 1,
             "department_id": 1,
-            "role": "developer",
+            "position": "developer",
             "manager_id": 2
         },
         {
             "employee_id": 2,
             "department_id": 2,
-            "role": "manager",
+            "position": "manager",
             "manager_id": null
         },
         {
             "employee_id": 1,
             "department_id": 2,
-            "role": "developer",
+            "position": "developer",
             "manager_id": 2
         },
         {
             "employee_id": 3,
             "department_id": 3,
-            "role": "tester",
+            "position": "tester",
             "manager_id": null
         },
         {
             "employee_id": 2,
             "department_id": 4,
-            "role": "manager",
+            "position": "manager",
             "manager_id": null
         },
         {
             "employee_id": 1,
             "department_id": 4,
-            "role": "developer",
+            "position": "developer",
             "manager_id": 2
         },
         {
             "employee_id": 2,
             "department_id": 5,
-            "role": "manager",
+            "position": "manager",
             "manager_id": null
         },
         {
             "employee_id": 1,
             "department_id": 5,
-            "role": "developer",
+            "position": "developer",
             "manager_id": 2
         },
         {
             "employee_id": 3,
             "department_id": 6,
-            "role": "manager",
+            "position": "manager",
             "manager_id": null
         },
         {
             "employee_id": 4,
             "department_id": 6,
-            "role": "developer",
+            "position": "developer",
             "manager_id": 3
         },
         {
             "employee_id": 2,
             "department_id": 7,
-            "role": "manager",
+            "position": "manager",
             "manager_id": null
         },
         {
             "employee_id": 1,
             "department_id": 7,
-            "role": "developer",
+            "position": "developer",
             "manager_id": 2
         },
         {
             "employee_id": 3,
             "department_id": 8,
-            "role": "manager",
+            "position": "manager",
             "manager_id": null
         },
         {
             "employee_id": 4,
             "department_id": 8,
-            "role": "tester",
+            "position": "tester",
             "manager_id": 3
         }
     ],

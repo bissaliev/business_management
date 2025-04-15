@@ -84,7 +84,7 @@ class EmployeeStructure(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     employee_id: Mapped[int]  # Ссылка на User Service
     department_id: Mapped[int | None] = mapped_column(ForeignKey("departments.id"), nullable=True)
-    role: Mapped[str] = mapped_column(String(255), nullable=False)
+    position: Mapped[str] = mapped_column(String(255), nullable=False)  # position
     manager_id: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)  # Основной руководитель
 
     department: Mapped[Optional["Department"]] = relationship("Department", back_populates="employees")

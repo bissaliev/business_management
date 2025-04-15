@@ -10,23 +10,41 @@ class UserResponse(BaseModel):
     status: EmployeeRole
 
 
+class TeamEmployeeResponse(BaseModel):
+    """Модель ответа для работников из сервиса Team Service"""
+
+    id: int
+    employee_id: int
+    team_id: int
+    role: EmployeeRole
+
+
 class EmployeeStructureCreate(BaseModel):
     employee_id: int
     department_id: int | None = None
-    role: str
+    position: str
     manager_id: int | None = None
 
 
 class EmployeeStructureUpdate(BaseModel):
     department_id: int | None = None
-    role: str | None = None
+    position: str | None = None
     manager_id: int | None = None
 
 
 class EmployeeManagerCreate(BaseModel):
+    """Добавление дополнительного менеджера"""
+
     employee_structure_id: int
     manager_id: int
     context: str
+
+
+class AddManager(BaseModel):
+    """Добавление руководителя"""
+
+    department_id: int
+    manager_id: int
 
 
 class EmployeeManagerResponse(BaseModel):
@@ -49,7 +67,7 @@ class EmployeeResponse(BaseModel):
     id: int
     employee_id: int
     department_id: int | None = None
-    role: str
+    position: str
     manager_id: int | None = None
 
     model_config = {"from_attributes": True}
