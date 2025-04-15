@@ -5,6 +5,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 
 from app.routers.dependencies import AuthServiceDeps, CurrentUserDeps
 from app.schemas.users import Token, UserCreate, UserResponse
+from app.security import oauth2_scheme
 
 router = APIRouter()
 
@@ -20,6 +21,11 @@ async def login_for_access_token(
 ) -> Token:
     token = await auth_service.login(form_data.username, form_data.password)
     return token
+
+
+@router.get("/verify")
+async def verify_token(token: Annotated[str, Depends(oauth2_scheme)], auth_service: AuthServiceDeps):
+    return await auth_service.verify_token(token)
 
 
 @router.get("/me/")
