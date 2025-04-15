@@ -1,9 +1,9 @@
 import asyncio
 import json
 
-from app.auth import get_password_hash
 from app.database import SessionLocal, async_engine
 from app.models.users import Base, User
+from app.security import get_password_hash
 
 
 def json_to_dict(filename):
