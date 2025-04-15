@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import and_, func, select
+from sqlalchemy import and_, exists, func, select
 
 from app.models.task_evaluation import TaskEvaluation
 from app.repositories.base_repository import BaseRepository
@@ -35,3 +35,7 @@ class TaskEvaluationRepository(BaseRepository):
         )
         result = (await self.session.execute(stmt)).scalar()
         return result
+
+    async def exists_by_task_id(self, task_id: int) -> bool:
+        stmt = select(exists().where(self.model.task_id == task_id))
+        return await self.session.scalar(stmt)
