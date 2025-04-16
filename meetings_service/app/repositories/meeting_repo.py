@@ -14,7 +14,7 @@ class MeetingRepository(BaseRepository):
         """Получение списка встреч с фильтрацией по идентификатору команды и идентификатору работника"""
         stmt = (
             select(self.model)
-            .join(MeetingParticipant, self.model.id == MeetingParticipant.meeting_id)
+            .outerjoin(MeetingParticipant, self.model.id == MeetingParticipant.meeting_id)
             .options(selectinload(self.model.participants))
         )
         if team_id:
@@ -30,7 +30,7 @@ class MeetingRepository(BaseRepository):
         """Получение объект встреч по id команды и идентификатору работника"""
         stmt = (
             select(self.model)
-            .join(MeetingParticipant, self.model.id == MeetingParticipant.meeting_id)
+            .outerjoin(MeetingParticipant, self.model.id == MeetingParticipant.meeting_id)
             .options(selectinload(self.model.participants))
             .where(
                 and_(
