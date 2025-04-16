@@ -1,0 +1,21 @@
+from sqlalchemy import delete, exists, select
+
+from app.models.meeting import MeetingParticipant
+from app.repositories.base_repository import BaseRepository
+
+
+class MeetingParticipantRepository(BaseRepository):
+    """Репозиторий для управления участниками встреч"""
+
+    model = MeetingParticipant
+
+    async def exists_participant(self, meeting_id: int, participant_id: int) -> bool:
+        stmt = select(exists().where(self.model.meeting_id == meeting_id, self.model.participant_id == participant_id))
+        return await self.session.scalar(stmt)
+
+    async def delete_participant(self, meeting_id: int, participant_id: int) -> bool:
+        stmt = delete(self.model).where(
+            self.model.meeting_id == meeting_id, self.model.participant_id == participant_id
+        )
+        result = await self.session.execute(stmt)
+        return result.rowcount > 0
