@@ -23,10 +23,10 @@ class MeetingCreate(BaseModel):
 class MeetingUpdate(BaseModel):
     """Обновление встречи"""
 
-    title: Optional[str]
-    description: Optional[str]
-    start_time: Optional[datetime]
-    end_time: Optional[datetime]
+    title: Optional[str] = None
+    description: Optional[str] = None
+    start_time: Optional[datetime] = None
+    end_time: Optional[datetime] = None
 
 
 class MeetingOut(BaseModel):
