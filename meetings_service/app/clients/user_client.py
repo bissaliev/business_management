@@ -4,7 +4,6 @@ from fastapi import HTTPException
 from app.config import settings
 
 BASE_URL = settings.get_user_url()
-# BASE_URL = "http://127.0.0.1/users"
 
 
 class UserServiceClient:
