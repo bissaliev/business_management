@@ -1,8 +1,6 @@
 services:
     auth_db:
         image: postgres
-        ports:
-            - "5433:5432"
         env_file:
             - auth_service/.env
         healthcheck:
@@ -16,16 +14,12 @@ services:
         build: ./auth_service
         env_file:
             - ./auth_service/.env
-        ports:
-            - "8001:8000"
         depends_on:
             auth_db:
                 condition: service_healthy
 
     team_db:
         image: postgres
-        ports:
-            - "5434:5432"
         env_file:
             - teams_service/.env
         healthcheck:
@@ -39,8 +33,6 @@ services:
         build: ./teams_service
         env_file:
             - ./teams_service/.env
-        ports:
-            - "8002:8000"
 
         depends_on:
             team_db:
@@ -48,8 +40,6 @@ services:
 
     org_structure_db:
         image: postgres
-        ports:
-            - "5435:5432"
         env_file:
             - ./org_structure_service/.env
         healthcheck:
@@ -63,8 +53,6 @@ services:
         build: ./org_structure_service
         env_file:
             - ./org_structure_service/.env
-        ports:
-            - "8003:8000"
 
         depends_on:
             org_structure_db:
@@ -72,8 +60,6 @@ services:
 
     tasks_db:
         image: postgres
-        ports:
-            - "5436:5432"
         env_file:
             - ./tasks_service/.env
         healthcheck:
@@ -87,11 +73,29 @@ services:
         build: ./tasks_service
         env_file:
             - ./tasks_service/.env
-        ports:
-            - "8004:8000"
 
         depends_on:
             tasks_db:
+                condition: service_healthy
+
+    meeting_db:
+        image: postgres
+        env_file:
+            - ./meetings_service/.env
+        healthcheck:
+            test: ["CMD-SHELL", "pg_isready -U postgres"]
+            interval: 5s
+            timeout: 5s
+            retries: 5
+            start_period: 5s
+
+    meeting_service:
+        build: ./meetings_service
+        env_file:
+            - ./meetings_service/.env
+
+        depends_on:
+            meeting_db:
                 condition: service_healthy
 
     nginx:
@@ -104,3 +108,4 @@ services:
             - auth_service
             - teams_service
             - org_structure_service
+            - meeting_service
