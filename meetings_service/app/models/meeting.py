@@ -1,9 +1,8 @@
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
-from sqlalchemy import DateTime, Integer, String
-from sqlalchemy.dialects.postgresql import JSONB
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy import DateTime, ForeignKey, Integer, String
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database import Base
 
@@ -18,7 +17,22 @@ class Meeting(Base):
     end_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     team_id: Mapped[int] = mapped_column(Integer, nullable=False)  # Команда
     creator_id: Mapped[int] = mapped_column(Integer, nullable=False)  # Создатель
-    participants: Mapped[list[int]] = mapped_column(JSONB, nullable=False)  # Список employee_id
     created_at: Mapped[datetime] = mapped_column(
         default=lambda: datetime.now(ZoneInfo("UTC")), type_=DateTime(timezone=True)
     )
+    participants: Mapped[list["MeetingParticipant"]] = relationship(
+        back_populates="meeting", cascade="all, delete-orphan"
+    )
+
+    def __repr__(self):
+        return f"Meeting(id={self.id}, title={self.title})"
+
+
+class MeetingParticipant(Base):
+    __tablename__ = "meeting_participants"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    meeting_id: Mapped[int] = mapped_column(ForeignKey("meetings.id", ondelete="CASCADE"))
+    participant_id: Mapped[int]
+
+    meeting: Mapped["Meeting"] = relationship(back_populates="participants")
