@@ -10,9 +10,7 @@ from app.database import get_session
 from app.schemas.users import EmployeeRole, User
 from app.services.meeting_service import MeetingService
 
-BASE_USER_SERVICE_URL = settings.get_user_url()
-
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f"{BASE_USER_SERVICE_URL}/auth/token")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f"{settings.URL_TOKEN}")
 
 
 async def meeting_service(session: Annotated[AsyncSession, Depends(get_session)]):

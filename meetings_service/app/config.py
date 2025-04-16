@@ -13,6 +13,7 @@ class Setting(BaseSettings):
     POSTGRES_DB: str
     DB_HOST: str
     DB_PORT: str
+    URL_TOKEN: str
 
     model_config = SettingsConfigDict(env_file=".env")
 
