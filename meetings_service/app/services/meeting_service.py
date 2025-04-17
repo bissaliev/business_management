@@ -1,10 +1,11 @@
 from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.clients.team_client import TeamServiceClient
+from app.clients.calendar_service_client import CalendarServiceClient
 from app.models.meeting import Meeting
 from app.repositories.meeting_participant_repo import MeetingParticipantRepository
 from app.repositories.meeting_repo import MeetingRepository
+from app.schemas.event_webhooks import NewEventHook
 from app.schemas.meeting import MeetingCreate, MeetingUpdate, Participant
 from app.schemas.users import User
 
@@ -16,11 +17,20 @@ class MeetingService:
         self.session = session
         self.repo = MeetingRepository(session)
         self.meeting_participant_repo = MeetingParticipantRepository(session)
-        self.team_client = TeamServiceClient()
+        self.calendar_client = CalendarServiceClient()
+
+    async def _get_meeting_or_404(self, meeting_id: int, user_id: int) -> Meeting:
+        meeting = await self.repo.get(meeting_id)
+        if not meeting:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Встреча не найдена")
+        if meeting.creator_id != user_id:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Нет прав доступа")
+        return meeting
 
     async def create_meeting(self, user: User, new_data: MeetingCreate) -> Meeting:
         """Создание встречи"""
         meeting = await self.repo.create(creator_id=user.id, **new_data.model_dump())
+        await self.create_event(meeting, user.id)
         return meeting
 
     async def get_list_meetings(self, user: User, team_id: int | None = None) -> list[Meeting]:
@@ -29,58 +39,63 @@ class MeetingService:
         return meetings
 
     async def get_meeting(self, user: User, meeting_id: int) -> list[Meeting]:
-        meeting = await self.repo.get_meeting(user.id, meeting_id)
-        if not meeting:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Встреча не найдена")
-        return meeting
+        """Получение встречи пользователя"""
+        return await self._get_meeting_or_404(meeting_id, user.id)
 
     async def update_meeting(self, user: User, meeting_id: int, update_data: MeetingUpdate) -> list[Meeting]:
         """Редактирование встречи"""
-        meeting = await self.repo.get(meeting_id)
-        if not meeting:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Встреча не найдена")
-        if meeting.creator_id != user.id:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST, detail="Редактирование встречи доступно только создателю"
-            )
+        await self._get_meeting_or_404(meeting_id, user.id)
         meeting: Meeting = await self.repo.update_meeting(meeting_id, **update_data.model_dump(exclude_unset=True))
         return meeting
 
     async def delete_meeting(self, user: User, meeting_id: int) -> None:
         """Удаление встречи"""
-        meeting = await self.repo.get(meeting_id)
-        if not meeting:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Встреча не найдена")
-        if meeting.creator_id != user.id:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST, detail="Редактирование встречи доступно только создателю"
-            )
+        meeting = await self._get_meeting_or_404(meeting_id, user.id)
+        await self.delete_event(meeting, user.id)
         await self.repo.delete(meeting_id)
 
     async def add_participant(self, meeting_id: int, participant: Participant, user: User):
         """Добавить участника ко встрече"""
-        meeting = await self.repo.get(meeting_id)
-        if not meeting:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Встреча не найдена")
-        if meeting.creator_id != user.id:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Добавление участника встречи доступно только создателю",
-            )
+        meeting = await self._get_meeting_or_404(meeting_id, user.id)
         if await self.meeting_participant_repo.exists_participant(meeting_id, participant.participant_id):
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Участника уже присоединен к встрече")
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Участник уже присоединен к встрече")
+        if await self.verify_event(meeting, participant.participant_id):
+            raise HTTPException(status_code=400, detail="У пользователя назначено событие на это время")
         await self.meeting_participant_repo.create(meeting_id=meeting_id, participant_id=participant.participant_id)
+        await self.create_event(meeting, participant.participant_id)
 
     async def delete_participant(self, meeting_id: int, participant_id: int, user: User):
         """Удаление участника из встречи"""
-        meeting = await self.repo.get(meeting_id)
-        if not meeting:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Встреча не найдена")
-        if meeting.creator_id != user.id:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Удаление участника встречи доступно только создателю",
-            )
+        meeting = await self._get_meeting_or_404(meeting_id, user.id)
         if not await self.meeting_participant_repo.exists_participant(meeting_id, participant_id):
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Участника не присоединен к встрече")
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Участник не присоединен к встрече")
+        await self.delete_event(meeting, participant_id)
         await self.meeting_participant_repo.delete_participant(meeting_id=meeting_id, participant_id=participant_id)
+
+    async def create_event(self, meeting: Meeting, user_id: int):
+        """Создание события в Calendar Service"""
+        event_data = NewEventHook.model_validate(meeting, by_alias=True).model_dump(
+            mode="json", exclude=["employee_id"]
+        )
+        event_data["employee_id"] = user_id
+        await self.calendar_client.send_meeting_webhook(event_data)
+
+    async def verify_event(self, meeting: Meeting, user_id: int) -> bool:
+        """Проверка на существование события в Calendar Service"""
+        event_data = NewEventHook.model_validate(meeting, by_alias=True).model_dump(
+            mode="json", include=["start_time", "end_time"]
+        )
+        event_data["employee_id"] = user_id
+        return await self.calendar_client.verify_event_webhook(event_data)
+
+    async def delete_event(self, meeting: Meeting, user_id: int):
+        """Удаление события из Calendar Service"""
+        event_data = NewEventHook.model_validate(meeting, by_alias=True).model_dump(
+            mode="json", include=["source_id", "event_type"]
+        )
+        event_data["employee_id"] = user_id
+        participant_ids = await self.meeting_participant_repo.get_participant_ids(meeting.id)
+        await self.calendar_client.delete_meeting_webhook(event_data)
+        for participant_id in participant_ids:
+            event_data["employee_id"] = participant_id
+            await self.calendar_client.delete_meeting_webhook(event_data)
