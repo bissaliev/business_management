@@ -4,7 +4,7 @@ from app.routers.calendar import router as calendar_router
 from app.routers.events import router as event_router
 from app.routers.webhooks import router as webhook_router
 
-app = FastAPI(root_path="/meeting-service")
+app = FastAPI(root_path="/calendar-service")
 
 
 app.include_router(event_router, prefix="/events", tags=["events"])
