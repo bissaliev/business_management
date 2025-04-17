@@ -3,10 +3,10 @@ from typing import Annotated
 from fastapi import APIRouter, Query, status
 from fastapi.responses import JSONResponse
 
-from app.routers.dependencies import EventWebhookServiceDeps
+from app.routers.dependencies import EventWebhookServiceDeps, VerifyApiKey
 from app.schemas.event_webhooks import EventDeleteParams, EventParams, NewEventHook
 
-router = APIRouter()
+router = APIRouter(dependencies=[VerifyApiKey])
 
 
 @router.post("/new-event", summary="Вебхук для создание события")

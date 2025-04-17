@@ -11,6 +11,7 @@ from app.schemas.users import EmployeeRole, User
 from app.services.calendar_service import CalendarService
 from app.services.event_service import EventService
 from app.services.event_webhook_service import EventWebhookService
+from app.security import verify_api_key
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f"{settings.URL_TOKEN}")
 
@@ -64,3 +65,5 @@ async def require_manager_or_admin(user: Annotated[User, Depends(get_current_use
 
 
 ManagerOrAdmin = Annotated[User, Depends(require_manager_or_admin)]
+
+VerifyApiKey = Depends(verify_api_key)
