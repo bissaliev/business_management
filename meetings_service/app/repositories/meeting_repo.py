@@ -1,4 +1,4 @@
-from sqlalchemy import and_, or_, select, update
+from sqlalchemy import select, update
 from sqlalchemy.orm import selectinload
 
 from app.models.meeting import Meeting, MeetingParticipant
@@ -25,22 +25,6 @@ class MeetingRepository(BaseRepository):
             )
         meetings = (await self.session.execute(stmt)).scalars().all()
         return meetings
-
-    async def get_meeting(self, employee_id: int, meeting_id: int) -> Meeting:
-        """Получение объект встреч по id команды и идентификатору работника"""
-        stmt = (
-            select(self.model)
-            .outerjoin(MeetingParticipant, self.model.id == MeetingParticipant.meeting_id)
-            .options(selectinload(self.model.participants))
-            .where(
-                and_(
-                    self.model.id == meeting_id,
-                    or_(self.model.creator_id == employee_id, MeetingParticipant.participant_id == employee_id),
-                )
-            )
-        )
-        meeting = (await self.session.execute(stmt)).scalars().first()
-        return meeting
 
     async def update_meeting(self, meeting_id: int, **update_data: dict) -> Meeting:
         """Обновление встречи"""
