@@ -44,13 +44,14 @@ class AuthService:
             )
         if not user.is_active:
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Inactive user")
-        data = {"sub": user.email, "id": user.id, "status": user.status.value}
-        role = await self.team_client.get_employee(user.id, user.team_id)
+        data = {"sub": str(user.id), "email": user.email, "status": user.status.value}
+        role = await self.team_client.get_employee_role(user.id, user.team_id)
         data |= role
         access_token = create_access_token(data=data)
         return Token(access_token=access_token, token_type="bearer")
 
     async def get_current_user(self, token: str) -> User:
+        """Получение пользователя через токен"""
         credentials_exception = HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Could not validate credentials",
@@ -59,10 +60,10 @@ class AuthService:
         payload = decode_access_token(token)
         if payload is None:
             raise credentials_exception
-        email: str = payload.get("sub")
-        if email is None:
+        user_id: str = payload.get("sub")
+        if user_id is None:
             raise credentials_exception
-        user = await self.repo.get_user_by_email(email)
+        user = await self.repo.get(int(user_id))
         if user is None or not user.is_active:
             raise credentials_exception
         return user
