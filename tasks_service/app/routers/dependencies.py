@@ -6,16 +6,15 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.clients.user_client import UserServiceClient
+from app.config import settings
 from app.database import get_session
-
 from app.models.tasks import Task
 from app.schemas.users import EmployeeRole, User
 from app.services.comment_service import CommentService
 from app.services.task_evaluation_service import TaskEvaluationService
 from app.services.task_service import TaskService
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="http://127.0.0.1/users/auth/token")
-# oauth2_scheme = OAuth2PasswordBearer(tokenUrl="http://localhost:8001/users/auth/token")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl=settings.URL_TOKEN)
 
 
 async def task_service(session: Annotated[AsyncSession, Depends(get_session)]):
@@ -47,8 +46,6 @@ UserClientDeps = Annotated[UserServiceClient, Depends(lambda: UserServiceClient(
 async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)], user_client: UserClientDeps) -> User:
     """Проверяет токен через User Service, возвращает данные (id, status, team_role)."""
     user_data = await user_client.verify_token(token)
-    # user_data["id"] = 100
-    # user_data["team_id"] = 100
     if not user_data["is_active"]:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Inactive user")
     return User.model_validate(user_data)
@@ -84,16 +81,16 @@ async def current_task(
 CurrentTask = Annotated[Task, Depends(current_task)]
 
 
-async def require_task_assignee_or_manager(task: CurrentTask, user: CurrentUser):
+async def require_task_assignee(task: CurrentTask, user: CurrentUser):
     """
     Разрешает редактирование/комментирование задачи исполнителю (assignee_id), руководителям и администратору.
     """
-    if not (user.id == task.creator_id or user.id == task.assignee_id or user.role == EmployeeRole.ADMINISTRATOR):
+    if not (user.id == task.creator_id or user.id == task.assignee_id):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Не достаточно прав")
     return user
 
 
-ManagerOrAssigneePermission = Depends(require_task_assignee_or_manager)
+AssigneePermission = Depends(require_task_assignee)
 
 
 async def check_team_member_detail(task: CurrentTask, user: Annotated[User, Depends(get_current_user)]):
