@@ -8,11 +8,16 @@ class Setting(BaseSettings):
     ORG_PORT: str
     USER_HOST: str
     USER_PORT: str
+    URL_TOKEN: str
     POSTGRES_USER: str
     POSTGRES_PASSWORD: str
     POSTGRES_DB: str
     DB_HOST: str
     DB_PORT: str
+
+    CALENDAR_HOST: str
+    CALENDAR_PORT: str
+    CALENDAR_API_KEY: str
 
     model_config = SettingsConfigDict(env_file=".env")
 
@@ -27,6 +32,9 @@ class Setting(BaseSettings):
 
     def get_org_url(self):
         return f"http://{self.ORG_HOST}:{self.ORG_PORT}/org"
+
+    def get_calendar_url(self):
+        return f"http://{self.CALENDAR_HOST}:{self.CALENDAR_PORT}/calendar-service"
 
 
 settings = Setting()
