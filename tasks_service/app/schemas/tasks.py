@@ -11,7 +11,8 @@ class TaskCreate(BaseModel):
 
     title: str
     description: Optional[str] = None
-    due_date: Optional[datetime] = None
+    start_time: datetime
+    end_time: datetime
     assignee_id: int
     team_id: int
 
@@ -21,8 +22,9 @@ class TaskUpdate(BaseModel):
 
     title: Optional[str] = None
     description: Optional[str] = None
+    start_time: Optional[datetime] = None
+    end_time: Optional[datetime] = None
     status: Optional[TaskStatus] = None
-    due_date: Optional[datetime] = None
     assignee_id: Optional[int] = None
 
 
@@ -31,11 +33,12 @@ class TaskResponse(BaseModel):
 
     id: int
     title: str
-    description: Optional[str]
+    description: Optional[str] = None
     status: TaskStatus
+    start_time: datetime
+    end_time: datetime
     created_at: datetime
     updated_at: datetime
-    due_date: Optional[datetime]
     creator_id: int
     assignee_id: int
     team_id: int
