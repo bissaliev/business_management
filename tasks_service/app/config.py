@@ -2,6 +2,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Setting(BaseSettings):
+    SECRET_KEY: str
     TEAM_HOST: str
     TEAM_PORT: str
     ORG_HOST: str
