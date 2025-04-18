@@ -11,7 +11,7 @@ class TeamServiceClient:
     def __init__(self, base_url: str = BASE_TEAM_URL):
         self.base_url = base_url
 
-    async def get_employee(self, user_id: int, team_id: int):
+    async def get_employee_role(self, user_id: int, team_id: int):
         """Получение работника из Team Service"""
         try:
             async with httpx.AsyncClient(timeout=httpx.Timeout(10.0, connect=5.0)) as client:
