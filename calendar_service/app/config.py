@@ -14,7 +14,8 @@ class Setting(BaseSettings):
     DB_HOST: str
     DB_PORT: str
     URL_TOKEN: str
-    API_KEY: str
+    MEETING_API_KEY: str
+    TASK_API_KEY: str
 
     model_config = SettingsConfigDict(env_file=".env")
 
