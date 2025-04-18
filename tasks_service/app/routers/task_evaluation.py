@@ -21,5 +21,5 @@ async def create_evaluation(
     user: CurrentUser,
     evaluation_service: TaskEvaluationServiceDeps,
 ) -> TaskEvaluationOut:
-    evaluation = await evaluation_service.create_evaluation(task_id, user, evaluation_data.model_dump())
+    evaluation = await evaluation_service.create_evaluation(task_id, user, evaluation_data)
     return evaluation
