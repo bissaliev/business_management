@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from sqlalchemy import ForeignKey
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database import Base
 
@@ -20,3 +20,8 @@ class TaskEvaluation(Base):
     completeness: Mapped[float]  # Оценка за полноту (1–5)
     average_score: Mapped[float]  # Средний балл (вычисляется автоматически)
     created_at: Mapped[datetime] = mapped_column(default=datetime.now)
+
+    task = relationship("Task", back_populates="task_evaluations")
+
+    def __str__(self):
+        return f"Средняя оценка {self.average_score}"

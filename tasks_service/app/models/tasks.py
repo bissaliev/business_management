@@ -2,7 +2,7 @@ import enum
 from datetime import datetime
 
 from sqlalchemy import DateTime, Enum, String, Text
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database import Base
 
@@ -37,7 +37,11 @@ class Task(Base):
     creator_id: Mapped[int]  # Создатель (руководитель)
     assignee_id: Mapped[int]  # Исполнитель (подчинённый)
     team_id: Mapped[int]  # Команда
-    # TODO: Добавить период выполнения
+
+    task_evaluations = relationship("TaskEvaluation", back_populates="task")
 
     def __repr__(self):
         return f"Task(id={self.id}, title={self.title}, status={self.status})"
+
+    def __str__(self):
+        return self.title
