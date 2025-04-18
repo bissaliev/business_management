@@ -1,5 +1,14 @@
 [
     {
+        "name": "admin",
+        "email": "admin@admin.com",
+        "status": "админ",
+        "password": "admin",
+        "is_active": true,
+        "deleted_at": null,
+        "team_id": 1
+    },
+    {
         "name": "Иван Иванов",
         "email": "ivan.ivanov@example.com",
         "status": "пользователь",
