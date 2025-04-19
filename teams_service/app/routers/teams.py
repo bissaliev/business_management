@@ -7,7 +7,7 @@ from app.schemas.teams import TeamResponse, TeamUpdate
 router = APIRouter()
 
 
-@router.get("/{team_id}", dependencies=[AdminDeps], summary="Получение команды по id")
+@router.get("/{team_id}", summary="Получение команды по id")
 async def get_team(team_id: int, team_service: TeamServiceDeps) -> TeamResponse:
     return await team_service.get_one(team_id)
 
