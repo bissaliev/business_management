@@ -1,4 +1,4 @@
-from sqlalchemy import delete, exists, insert, select, update
+from sqlalchemy import delete, exists, select, update
 
 from app.models.teams import TeamEmployee
 from app.repositories.base_repository import BaseRepository
@@ -18,12 +18,6 @@ class TeamEmployeeRepository(BaseRepository):
     async def get_specific_team_employee(self, team_id: int, employee_id: int) -> TeamEmployee:
         """Получение сотрудника определенной команды"""
         stmt = select(self.model).where(self.model.team_id == team_id, self.model.employee_id == employee_id)
-        result = await self.session.scalars(stmt)
-        return result.first()
-
-    async def add_employee_to_team(self, team_id: int, data: dict) -> TeamEmployee:
-        """Добавление работника в команду"""
-        stmt = insert(self.model).values(team_id=team_id, **data).returning(self.model)
         result = await self.session.scalars(stmt)
         return result.first()
 
