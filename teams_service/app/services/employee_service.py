@@ -23,7 +23,7 @@ class TeamEmployeeService:
         if not team:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Неверный идентификационный код команды")
         new_user = await self.user_client.create_user(**data.model_dump(exclude=["team_code"]), team_id=team.id)
-        new_employee = await self.repo.add_employee_to_team(team.id, {"employee_id": new_user.id})
+        new_employee = await self.repo.create(team_id=team.id, employee_id=new_user.id)
         return new_employee
 
     async def get_team_employees(self, team_id: int) -> TeamEmployee:
