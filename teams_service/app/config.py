@@ -4,6 +4,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Setting(BaseSettings):
     USER_HOST: str
     USER_PORT: str
+    URL_TOKEN: str
     POSTGRES_USER: str
     POSTGRES_PASSWORD: str
     POSTGRES_DB: str
