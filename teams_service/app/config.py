@@ -2,6 +2,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Setting(BaseSettings):
+    SECRET_KEY: str
     USER_HOST: str
     USER_PORT: str
     URL_TOKEN: str
