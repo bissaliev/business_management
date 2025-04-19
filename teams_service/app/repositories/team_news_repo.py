@@ -15,7 +15,7 @@ class TeamNewsRepository(BaseRepository):
         result = await self.session.scalars(stmt)
         return result.all()
 
-    async def create_news(self, team_id: int, data: dict) -> TeamNews:
+    async def create_news(self, team_id: int, **data: dict) -> TeamNews:
         """Создание новостей команды"""
         stmt = insert(self.model).values(team_id=team_id, **data).returning(self.model)
         result = await self.session.scalars(stmt)
@@ -27,7 +27,7 @@ class TeamNewsRepository(BaseRepository):
         result = await self.session.scalars(stmt)
         return result.first()
 
-    async def update_news(self, team_id: int, id: int, data: dict) -> TeamNews:
+    async def update_news(self, team_id: int, id: int, **data: dict) -> TeamNews:
         """Обновление новости команды"""
         stmt = (
             update(self.model)
