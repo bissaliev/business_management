@@ -4,6 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.models.teams import TeamNews
 from app.repositories.team_news_repo import TeamNewsRepository
 from app.repositories.team_repo import TeamRepository
+from app.schemas.team_news import TeamNewsCreate, TeamNewsUpdate
 
 
 class TeamNewsService:
@@ -16,15 +17,13 @@ class TeamNewsService:
 
     async def get_news_all(self, team_id: int) -> list[TeamNews]:
         """Получение всех новостей команды"""
-        if not await self._exists_team(team_id):
-            raise HTTPException(status_code=404, detail="Данной команды не существует")
+        await self._exists_team(team_id)
         return await self.repo.get_news_all(team_id)
 
-    async def create_news(self, team_id: int, data: dict) -> TeamNews:
+    async def create_news(self, team_id: int, data: TeamNewsCreate) -> TeamNews:
         """Создание новости в команде"""
-        if not await self._exists_team(team_id):
-            raise HTTPException(status_code=404, detail="Данной команды не существует")
-        return await self.repo.create_news(team_id, data)
+        await self._exists_team(team_id)
+        return await self.repo.create_news(team_id, **data.model_dump())
 
     async def get_news(self, team_id: int, id: int) -> TeamNews:
         """Получение одной новости команды"""
@@ -33,22 +32,22 @@ class TeamNewsService:
             raise HTTPException(status_code=404, detail="Данной новости не существует")
         return news
 
-    async def update_news(self, team_id: int, id: int, data: dict) -> TeamNews:
+    async def update_news(self, team_id: int, id: int, data: TeamNewsUpdate) -> TeamNews:
         """Обновление новости команды"""
-        if not await self._exists_team_news(team_id, id):
-            raise HTTPException(status_code=404, detail="Данной новости не существует")
-        return await self.repo.update_news(team_id, id, data)
+        await self._exists_team_news(team_id, id)
+        return await self.repo.update_news(team_id, id, **data.model_dump(exclude_unset=True))
 
     async def delete_news(self, team_id: int, id: int) -> None:
         """Удаление новости команды"""
-        if not await self._exists_team_news(team_id, id):
-            raise HTTPException(status_code=404, detail="Данной новости не существует")
+        await self._exists_team_news(team_id, id)
         await self.repo.delete_news(team_id, id)
 
     async def _exists_team(self, team_id: int) -> bool:
         """Проверка на существование команды"""
-        return await self.team_repo.exists(team_id)
+        if not await self.team_repo.exists(team_id):
+            raise HTTPException(status_code=404, detail="Данной команды не существует")
 
     async def _exists_team_news(self, team_id: int, id: int) -> bool:
         """Проверка на существование новости"""
-        return await self.repo.exists_news(team_id, id)
+        if not await self.repo.exists_news(team_id, id):
+            raise HTTPException(status_code=404, detail="Данной новости не существует")
