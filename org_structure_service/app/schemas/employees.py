@@ -10,15 +10,6 @@ class UserResponse(BaseModel):
     status: EmployeeRole
 
 
-class TeamEmployeeResponse(BaseModel):
-    """Модель ответа для работников из сервиса Team Service"""
-
-    id: int
-    employee_id: int
-    team_id: int
-    role: EmployeeRole
-
-
 class EmployeeStructureCreate(BaseModel):
     employee_id: int
     department_id: int | None = None
