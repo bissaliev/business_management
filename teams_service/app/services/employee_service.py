@@ -17,19 +17,16 @@ class TeamEmployeeService:
         self.repo = TeamEmployeeRepository(session)
         self.user_client = UserServiceClient()
 
-    async def create_employee(self, data: EmployeeCreate) -> TeamEmployee:
+    async def create_employee(self, team_id: int, data: EmployeeCreate) -> TeamEmployee:
         """Регистрация работника"""
-        team = await self.team_repo.get_team_by_team_code(data.team_code)
-        if not team:
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Неверный идентификационный код команды")
-        new_user = await self.user_client.create_user(**data.model_dump(exclude=["team_code"]), team_id=team.id)
-        new_employee = await self.repo.create(team_id=team.id, employee_id=new_user.id)
+        await self._exists_team(team_id)
+        new_user = await self.user_client.create_user(**data.model_dump(exclude=["role"]), team_id=team_id)
+        new_employee = await self.repo.create(team_id=team_id, employee_id=new_user.id, role=data.role)
         return new_employee
 
     async def get_team_employees(self, team_id: int) -> TeamEmployee:
         """Получение работников определенной команды"""
-        if not await self._exists_team(team_id):
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Команды не существует")
+        await self._exists_team(team_id)
         return await self.repo.get_team_employees(team_id)
 
     async def get_specific_team_employee(self, team_id: int, employee_id: int) -> TeamEmployee:
@@ -62,4 +59,5 @@ class TeamEmployeeService:
 
     async def _exists_team(self, team_id: int) -> bool:
         """Проверка на существование команды"""
-        return await self.team_repo.exists(team_id)
+        if not await self.team_repo.exists(team_id):
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Команды не существует")
