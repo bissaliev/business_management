@@ -37,4 +37,4 @@ class EmployeeCreate(BaseModel):
     name: str
     email: EmailStr
     password: str
-    team_code: str | None = None
+    role: EmployeeRole = EmployeeRole.EMPLOYEE
