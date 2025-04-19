@@ -28,7 +28,7 @@ class TeamEmployee(Base):
     __tablename__ = "team_employee"
     id: Mapped[int] = mapped_column(primary_key=True, index=True, autoincrement=True)
     employee_id: Mapped[int]
-    team_id: Mapped[int] = mapped_column(ForeignKey("teams.id"))
+    team_id: Mapped[int] = mapped_column(ForeignKey("teams.id", ondelete="CASCADE"))
     role: Mapped[EmployeeRole] = mapped_column(Enum(EmployeeRole, native_enum=False), default=EmployeeRole.EMPLOYEE)
 
     __table_args__ = (UniqueConstraint("employee_id", "team_id", name="uq_employee_team"),)
@@ -37,7 +37,7 @@ class TeamEmployee(Base):
 class TeamNews(Base):
     __tablename__ = "team_news"
     id: Mapped[int] = mapped_column(primary_key=True, index=True, autoincrement=True)
-    team_id: Mapped[int] = mapped_column(ForeignKey("teams.id"))
+    team_id: Mapped[int] = mapped_column(ForeignKey("teams.id", ondelete="CASCADE"))
     title: Mapped[str] = mapped_column(String(250))
     content: Mapped[str] = mapped_column(TEXT)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
