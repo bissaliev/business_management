@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 
 from app.routers.dependencies import TeamEmployeeServiceDeps
-from app.schemas.employees import AddEmployee, EmployeeCreate, EmployeeUpdateRole, TeamEmployeeResponse
+from app.schemas.employees import EmployeeCreate, EmployeeUpdateRole, TeamEmployeeResponse
 
 router = APIRouter()
 
@@ -10,19 +10,12 @@ router = APIRouter()
 async def create_employee(
     team_emp_service: TeamEmployeeServiceDeps, employee_data: EmployeeCreate
 ) -> TeamEmployeeResponse:
-    return await team_emp_service.create_employee(employee_data.model_dump())
+    return await team_emp_service.create_employee(employee_data)
 
 
 @router.get("/{team_id}/employees/", summary="Получение всех сотрудников определенной команды")
 async def get_team_employees(team_emp_service: TeamEmployeeServiceDeps, team_id: int) -> list[TeamEmployeeResponse]:
     return await team_emp_service.get_team_employees(team_id)
-
-
-@router.post("/{team_id}/employees/", summary="Добавление сотрудника в команду")
-async def add_employee_to_team(
-    team_emp_service: TeamEmployeeServiceDeps, team_id: int, employee_data: AddEmployee
-) -> TeamEmployeeResponse:
-    return await team_emp_service.add_employee_to_team(team_id, employee_data.model_dump())
 
 
 @router.get("/{team_id}/employees/{employee_id}", summary="Получение сотрудника определенной команды")
@@ -36,7 +29,7 @@ async def get_specific_team_employee(
 async def update_status(
     team_emp_service: TeamEmployeeServiceDeps, team_id: int, employee_id: int, role: EmployeeUpdateRole
 ) -> TeamEmployeeResponse:
-    return await team_emp_service.update_role(team_id, employee_id, role.model_dump())
+    return await team_emp_service.update_role(team_id, employee_id, role)
 
 
 @router.delete("/{team_id}/employees/{employee_id}", summary="Удаление сотрудника")
