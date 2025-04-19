@@ -1,10 +1,11 @@
-from fastapi import HTTPException
+from fastapi import HTTPException, status
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models import Division
+from app.models import Division, TeamStructure
 from app.repositories.division_repo import DivisionRepository
 from app.repositories.team_structure_repo import TeamStructureRepository
+from app.schemas.divisions import DivisionCreate, DivisionUpdate
 from app.schemas.team_structures import StructureType
 
 
@@ -16,55 +17,48 @@ class DivisionService:
         self.repo = DivisionRepository(session)
         self.team_structure_repo = TeamStructureRepository(session)
 
-    def verify_team_structure_type(self, structure_type) -> bool:
-        """Проверка на использования дивизии только в матричной орг. структуре"""
-        return structure_type == StructureType.DIVISIONAL
-
-    async def exists_division(self, division_id: int) -> bool:
-        """Проверка на существование дивизии"""
-        return await self.repo.exists(division_id)
-
-    async def get_team_structure(self, team_id: int):
-        return await self.team_structure_repo.get(team_id)
-
-    async def create_division(self, division_data: dict) -> Division:
-        """Создание дивизии"""
-        team_structure = await self.get_team_structure(division_data["team_id"])
-        if team_structure is None:
-            raise HTTPException(status_code=404, detail="TeamStructure не существует")
-
-        if not self.verify_team_structure_type(team_structure.structure_type):
-            raise HTTPException(status_code=400, detail="Дивизия определяется только для дивизионной структуры")
-
-        try:
-            department = await self.repo.add(division_data)
-            return department
-        except SQLAlchemyError as e:
-            raise HTTPException(status_code=500, detail="Ошибка  базы данных") from e
-
     async def get_divisions(self) -> list[Division]:
         """Получение всех дивизии"""
-        divisions = await self.repo.get_all()
-        return divisions
+        return await self.repo.get_all()
 
     async def get_division(self, division_id: int) -> Division:
+        """Получение дивизии"""
         division = await self.repo.get(division_id)
         if not division:
-            raise HTTPException(status_code=404, detail=f"Дивизии с id={division_id} не существует")
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail=f"Дивизии с id={division_id} не существует"
+            )
         return division
 
-    async def update_division(self, division_id: int, update_data: dict) -> Division:
+    async def create_division(self, division_data: DivisionCreate) -> Division:
+        """Создание дивизии"""
+        await self._get_team_structure(division_data.team_id)
+        try:
+            department = await self.repo.add(**division_data.model_dump())
+            return department
+        except SQLAlchemyError as e:
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Ошибка  базы данных") from e
+
+    async def update_division(self, division_id: int, update_data: DivisionUpdate) -> Division:
         """Обновление дивизии"""
         if not await self.repo.exists(division_id):
-            raise HTTPException(status_code=404, detail=f"Дивизии с id={division_id} не существует")
-        if "team_id" in update_data:
-            team_structure = await self.get_team_structure(update_data["team_id"])
-            if team_structure is None:
-                raise HTTPException(status_code=404, detail="TeamStructure не существует")
-
-            if not self.verify_team_structure_type(team_structure.structure_type):
-                raise HTTPException(status_code=400, detail="Дивизия определяется только для дивизионной структуры")
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail=f"Дивизии с id={division_id} не существует"
+            )
+        if update_data.team_id:
+            await self._get_team_structure()
         try:
-            return await self.repo.update(division_id, update_data)
+            return await self.repo.update(division_id, **update_data.model_dump(exclude_unset=True))
         except SQLAlchemyError as e:
-            raise HTTPException(status_code=500, detail="Ошибка  базы данных") from e
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Ошибка  базы данных") from e
+
+    async def _get_team_structure(self, team_id: int) -> TeamStructure:
+        """Проверка на существование и необходимый тип структуры"""
+        team_structure = await self.team_structure_repo.get(team_id)
+        if team_structure is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="TeamStructure не существует")
+        if team_structure.structure_type != StructureType.DIVISIONAL:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, detail="Дивизия определяется только для дивизионной структуры"
+            )
+        return team_structure
