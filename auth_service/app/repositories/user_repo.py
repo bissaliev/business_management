@@ -19,9 +19,9 @@ class UserRepository(BaseRepository):
     async def soft_delete(self, id: int) -> None:
         """Удаление пользователя с возможностью восстановления"""
         stmt = update(self.model).where(self.model.id == id).values(is_active=False, deleted_at=datetime.now())
-        await self.session.scalars(stmt)
+        await self.session.execute(stmt)
 
     async def restore(self, id: int) -> None:
         """Восстановление пользователя"""
         stmt = update(self.model).where(self.model.id == id).values(is_active=True, deleted_at=None)
-        await self.session.scalars(stmt)
+        await self.session.execute(stmt)
