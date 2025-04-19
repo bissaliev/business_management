@@ -1,5 +1,3 @@
-from uuid import UUID
-
 from pydantic import BaseModel
 
 
@@ -16,7 +14,6 @@ class TeamResponse(BaseModel):
     id: int
     name: str
     description: str
-    team_code: UUID
 
     model_config = {"from_attributes": True}
 
