@@ -1,20 +1,10 @@
 import httpx
-from fastapi import HTTPException
-from pydantic import UUID4, BaseModel
+from fastapi import HTTPException, status
 
 from app.config import settings
-from app.schemas.employees import TeamEmployeeResponse
-
-
-class TeamResponse(BaseModel):
-    id: int
-    name: str
-    description: str
-    team_code: UUID4
-
+from app.schemas.team_response import TeamEmployeeResponse, TeamResponse
 
 TEAM_BASE_URL: str = settings.get_team_service__url()
-# TEAM_BASE_URL = "http://localhost:8002/teams"
 
 
 class TeamServiceClient:
@@ -22,37 +12,33 @@ class TeamServiceClient:
 
     def __init__(self, base_url: str = TEAM_BASE_URL):
         self.base_url = base_url
+        self._timeout = httpx.Timeout(10.0, connect=5.0)
 
-    async def get_team(self, team_id: int) -> TeamResponse:
-        """Получение команды"""
+    async def _get(self, url: str) -> dict | None:
         try:
-            async with httpx.AsyncClient(timeout=httpx.Timeout(10.0, connect=5.0)) as client:
-                response = await client.get(f"{self.base_url}/{team_id}")
+            async with httpx.AsyncClient(timeout=self._timeout) as client:
+                response = await client.get(f"{self.base_url}{url}")
                 response.raise_for_status()
-                return TeamResponse.model_validate(response.json())
+                return response.json()
         except httpx.HTTPStatusError as e:
-            if e.response.status_code == 404:
+            if e.response.status_code == status.HTTP_404_NOT_FOUND:
                 return None
             raise HTTPException(
-                status_code=502,
-                detail=f"Ошибка при получении команды: {e.response.status_code}, {e.response.text}",
+                status_code=status.HTTP_502_BAD_GATEWAY,
+                detail=f"Ошибка при запросе к Team Service: {e.response.status_code}, {e.response.text}",
             ) from e
         except httpx.RequestError as e:
-            raise HTTPException(status_code=503, detail=f"Сервис команд недоступен: {e.__class__.__name__}") from e
-
-    async def get_employee(self, team_id: int, employee_id: int) -> TeamEmployeeResponse:
-        """Получение работника"""
-        try:
-            async with httpx.AsyncClient(timeout=httpx.Timeout(10.0, connect=5.0)) as client:
-                response = await client.get(f"{self.base_url}/teams/{team_id}/employees/{employee_id}")
-                response.raise_for_status()
-                return TeamEmployeeResponse.model_validate(response.json())
-        except httpx.HTTPStatusError as e:
-            if e.response.status_code == 404:
-                return None
             raise HTTPException(
-                status_code=502,
-                detail=f"Ошибка при получении команды: {e.response.status_code}, {e.response.text}",
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail=f"Сервис Team Service недоступен: {e.__class__.__name__}",
             ) from e
-        except httpx.RequestError as e:
-            raise HTTPException(status_code=503, detail=f"Сервис команд недоступен: {e.__class__.__name__}") from e
+
+    async def get_team(self, team_id: int) -> TeamResponse | None:
+        """Получение команды по ID"""
+        data = await self._get(f"/teams/{team_id}")
+        return TeamResponse.model_validate(data) if data else None
+
+    async def get_employee(self, team_id: int, employee_id: int) -> TeamEmployeeResponse | None:
+        """Получение сотрудника команды"""
+        data = await self._get(f"/teams/{team_id}/employees/{employee_id}")
+        return TeamEmployeeResponse.model_validate(data) if data else None
