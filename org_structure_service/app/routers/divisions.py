@@ -13,7 +13,7 @@ async def get_divisions(division_service: DivisionServiceDeps) -> list[DivisionR
 
 @router.post("/", summary="Создание дивизии")
 async def create_division(division: DivisionCreate, division_service: DivisionServiceDeps) -> DivisionResponse:
-    new_division = await division_service.create_division(division.model_dump())
+    new_division = await division_service.create_division(division)
     return new_division
 
 
@@ -26,4 +26,4 @@ async def get_division(id: int, division_service: DivisionServiceDeps) -> Divisi
 async def update_division(
     id: int, update_data: DivisionUpdate, division_service: DivisionServiceDeps
 ) -> DivisionResponse:
-    return await division_service.update_division(id, update_data.model_dump(exclude_unset=True))
+    return await division_service.update_division(id, update_data)
