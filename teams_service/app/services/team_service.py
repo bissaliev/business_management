@@ -3,7 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.teams import Team
 from app.repositories.team_repo import TeamRepository
-from app.schemas.teams import TeamCreate, TeamUpdate
+from app.schemas.teams import TeamUpdate
 
 
 class TeamService:
@@ -16,15 +16,6 @@ class TeamService:
     async def get_team_by_code(self, team_code: str):
         """Получение команды по специально коду"""
         return await self.repo.get_team_by_team_code(team_code)
-
-    async def create_team(self, team_data: TeamCreate):
-        """Создание команды"""
-        return await self.repo.create(**team_data.model_dump())
-
-    async def get_teams(self) -> list[Team]:
-        """Получение всех команд"""
-        teams = await self.repo.get_all()
-        return teams
 
     async def get_one(self, team_id: int) -> Team:
         """Получение одной команды"""
