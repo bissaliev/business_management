@@ -1,5 +1,5 @@
 import httpx
-from fastapi import HTTPException
+from fastapi import HTTPException, status
 
 from app.config import settings
 from app.schemas.employees import UserResponse
@@ -26,14 +26,19 @@ class UserServiceClient:
             status_code = e.response.status_code
             detail = e.response.text
 
-            if status_code == 409:
-                raise HTTPException(status_code=409, detail="Пользователь уже существует") from e
-            if status_code == 404:
-                raise HTTPException(status_code=404, detail="Пользователь не найден") from e
-            raise HTTPException(status_code=500, detail=f"Ошибка user service: {status_code}, {detail}") from e
+            if status_code == status.HTTP_409_CONFLICT:
+                raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Пользователь уже существует") from e
+            if status_code == status.HTTP_404_NOT_FOUND:
+                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Пользователь не найден") from e
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Ошибка user service: {status_code}, {detail}",
+            ) from e
 
         except httpx.ConnectError as e:
-            raise HTTPException(status_code=503, detail="User service недоступен") from e
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="User service недоступен"
+            ) from e
 
     async def create_user(self, name: str, email: str, password: str, team_id: int) -> UserResponse:
         """Создание пользователя в User Service"""
