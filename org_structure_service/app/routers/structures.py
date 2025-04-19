@@ -14,7 +14,7 @@ router = APIRouter()
 async def set_team_structure(
     structure: TeamStructureCreate, org_structure_service: OrgStructureServiceDeps
 ) -> TeamStructureResponseShort:
-    new_team_structure = await org_structure_service.create_team_structure(structure.model_dump())
+    new_team_structure = await org_structure_service.create_team_structure(structure)
     return new_team_structure
 
 
