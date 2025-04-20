@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from app.routers.dependencies import EmployeeServiceDeps, OnlyAdminDeps
+from app.routers.dependencies import AdminAndAssignedDepartmentDeps, EmployeeServiceDeps
 from app.schemas.employees import (
     AddManager,
     EmployeeManagerCreate,
@@ -19,7 +19,9 @@ async def get_employees(department_id: int, employee_service: EmployeeServiceDep
     return employees
 
 
-@router.post("/{department_id}/employees", dependencies=[OnlyAdminDeps], summary="Добавление сотрудника")
+@router.post(
+    "/{department_id}/employees", dependencies=[AdminAndAssignedDepartmentDeps], summary="Добавление сотрудника"
+)
 async def add_employee_to_department(
     department_id: int, employee: EmployeeStructureCreate, employee_service: EmployeeServiceDeps
 ) -> EmployeeResponse:
@@ -35,7 +37,11 @@ async def get_department_employee(
     return employee
 
 
-@router.put("/{department_id}/employees/{employee_id}", summary="Обновление данных сотрудника")
+@router.put(
+    "/{department_id}/employees/{employee_id}",
+    dependencies=[AdminAndAssignedDepartmentDeps],
+    summary="Обновление данных сотрудника",
+)
 async def update_employee_position(
     department_id: int, employee_id: int, employee_data: EmployeeStructureUpdate, employee_service: EmployeeServiceDeps
 ) -> EmployeeResponse:
@@ -43,20 +49,30 @@ async def update_employee_position(
     return employee
 
 
-@router.delete("/{department_id}/employees/{employee_id}", summary="Удаление сотрудника")
+@router.delete(
+    "/{department_id}/employees/{employee_id}",
+    dependencies=[AdminAndAssignedDepartmentDeps],
+    summary="Удаление сотрудника",
+)
 async def delete_employees(department_id: int, employee_id: int, employee_service: EmployeeServiceDeps) -> dict:
     await employee_service.delete_employee(department_id, employee_id)
     return {"message": "Работник удален"}
 
 
-@router.post("/{department_id}/add_manager/", summary="Назначение руководителя сотрудникам")
+@router.post(
+    "/{department_id}/add_manager/",
+    dependencies=[AdminAndAssignedDepartmentDeps],
+    summary="Назначение руководителя сотрудникам",
+)
 async def add_manager(department_id: int, manager_data: AddManager, employee_service: EmployeeServiceDeps) -> dict:
     await employee_service.add_manager(department_id, manager_data)
     return {"message": "Руководитель назначен"}
 
 
 @router.post(
-    "/{department_id}/employees/{employee_id}/add_extra_manager/", summary="Добавление дополнительного руководителя"
+    "/{department_id}/employees/{employee_id}/add_extra_manager/",
+    dependencies=[AdminAndAssignedDepartmentDeps],
+    summary="Добавление дополнительного руководителя",
 )
 async def add_extra_manager(
     department_id: int, employee_id: int, data: EmployeeManagerCreate, employee_manager_service: EmployeeServiceDeps
