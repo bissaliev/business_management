@@ -28,6 +28,10 @@ class EmployeeRepository(BaseRepository):
         )
         return (await self.session.scalars(stmt)).first()
 
+    async def get_employee_by_employee_id(self, employee_id: int):
+        stmt = select(self.model).where(self.model.employee_id == employee_id)
+        return (await self.session.scalars(stmt)).first()
+
     async def update_employee(self, employee_id: int, **data: dict) -> EmployeeStructure:
         stmt = update(self.model).where(self.model.employee_id == employee_id).values(**data).returning(self.model)
         result = await self.session.scalars(stmt)

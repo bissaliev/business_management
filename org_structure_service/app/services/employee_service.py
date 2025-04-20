@@ -70,7 +70,7 @@ class EmployeeService:
 
     async def get_department_members(self, employee_id: int) -> list[EmployeeStructure]:
         """Получить всех коллег департамента сотрудника"""
-        employee = await self.repo.get_employee(employee_id)
+        employee = await self.repo.get_employee_by_employee_id(employee_id)
         if not employee:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Работника не существует")
         members = await self.repo.get_employees_by_department_id(employee.department_id)
