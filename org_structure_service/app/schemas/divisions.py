@@ -16,7 +16,6 @@ class SDivision(BaseModel):
 class DivisionCreate(BaseModel):
     """Модель для создания дивизии"""
 
-    team_id: int
     name: str
 
 
@@ -33,7 +32,4 @@ class DivisionResponse(BaseModel):
 class DivisionUpdate(BaseModel):
     """Модель для обновления дивизии"""
 
-    team_id: int | None = None
     name: str | None = None
-
-    model_config = {"from_attributes": True}
