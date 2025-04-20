@@ -2,30 +2,41 @@ from fastapi import APIRouter
 
 from app.routers.dependencies import DepartmentServiceDeps
 from app.schemas.departments import DepartmentCreate, DepartmentResponse, DepartmentUpdate
+from app.schemas.response import MessageDelete
 
 router = APIRouter()
 
 
-@router.get("/", summary="Получение списка всех отделов")
-async def get_departments(department_service: DepartmentServiceDeps) -> list[DepartmentResponse]:
-    return await department_service.get_departments()
+@router.get("/{team_id}/departments", summary="Получение списка отделов определенной команды")
+async def get_departments(team_id: int, department_service: DepartmentServiceDeps) -> list[DepartmentResponse]:
+    return await department_service.get_departments(team_id)
 
 
-@router.post("/", summary="Создание отдела")
+@router.post("/{team_id}/departments", summary="Создание отдела")
 async def create_department(
-    department: DepartmentCreate, department_service: DepartmentServiceDeps
+    team_id: int, department: DepartmentCreate, department_service: DepartmentServiceDeps
 ) -> DepartmentResponse:
-    new_department = await department_service.create_department(department.model_dump())
+    new_department = await department_service.create_department(team_id, department)
     return new_department
 
 
-@router.get("/{id}", summary="Получение отдела")
-async def get_department(id: int, department_service: DepartmentServiceDeps) -> DepartmentResponse:
-    return await department_service.get_department(id)
-
-
-@router.put("/{id}", summary="Обновление отдела")
-async def update_department(
-    id: int, update_data: DepartmentUpdate, department_service: DepartmentServiceDeps
+@router.get("/{team_id}/departments/{department_id}", summary="Получение отдела")
+async def get_department(
+    team_id: int, department_id: int, department_service: DepartmentServiceDeps
 ) -> DepartmentResponse:
-    return await department_service.update_department(id, update_data.model_dump(exclude_unset=True))
+    return await department_service.get_department(team_id, department_id)
+
+
+@router.patch("/{team_id}/departments/{department_id}", summary="Обновление отдела")
+async def update_department(
+    team_id: int, department_id: int, update_data: DepartmentUpdate, department_service: DepartmentServiceDeps
+) -> DepartmentResponse:
+    return await department_service.update_department(team_id, department_id, update_data)
+
+
+@router.delete("/{team_id}/departments/{department_id}", summary="Удаление отдела")
+async def delete_department(
+    team_id: int, department_id: int, department_service: DepartmentServiceDeps
+) -> MessageDelete:
+    await department_service.delete_department(team_id, department_id)
+    return MessageDelete()
