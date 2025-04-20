@@ -21,18 +21,22 @@ class EmployeeRepository(BaseRepository):
         result = await self.session.scalars(stmt)
         return result.all()
 
-    async def get_employee(self, employee_id: int):
+    async def get_employee(self, department_id: int, employee_id: int):
         """Получить сотрудника"""
-        stmt = select(self.model).where(self.model.employee_id == employee_id)
+        stmt = select(self.model).where(
+            self.model.department_id == department_id, self.model.employee_id == employee_id
+        )
         return (await self.session.scalars(stmt)).first()
 
     async def update_employee(self, employee_id: int, **data: dict) -> EmployeeStructure:
         stmt = update(self.model).where(self.model.employee_id == employee_id).values(**data).returning(self.model)
-        result = await self.session.execute(stmt)
-        return result.scalar_one_or_none()
+        result = await self.session.scalars(stmt)
+        return result.first()
 
-    async def delete_employee(self, employee_id: int) -> bool:
-        stmt = delete(self.model).where(self.model.employee_id == employee_id)
+    async def delete_employee(self, employee_id: int, department_id: int) -> bool:
+        stmt = delete(self.model).where(
+            self.model.employee_id == employee_id, self.model.department_id == department_id
+        )
         result = await self.session.execute(stmt)
         return result.rowcount > 0
 
