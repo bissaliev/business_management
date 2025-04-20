@@ -1,10 +1,10 @@
 from fastapi import APIRouter
 
-from app.routers.dependencies import DivisionServiceDeps
+from app.routers.dependencies import AdminAndAssigned, DivisionServiceDeps
 from app.schemas.divisions import DivisionCreate, DivisionResponse, DivisionUpdate
 from app.schemas.response import MessageDelete
 
-router = APIRouter()
+router = APIRouter(dependencies=[AdminAndAssigned])
 
 
 @router.get("/{team_id}/divisions", summary="Получение списка дивизий определенной команды")
