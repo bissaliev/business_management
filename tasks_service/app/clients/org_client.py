@@ -15,7 +15,7 @@ class OrgServiceClient:
     async def get_membership(self, employee_id: int) -> dict:
         try:
             async with httpx.AsyncClient(timeout=httpx.Timeout(10.0, connect=5.0)) as client:
-                response = await client.get(f"{self.base_url}/employees/{employee_id}/department_members")
+                response = await client.get(f"{self.base_url}/departments/{employee_id}/department_members")
                 response.raise_for_status()
                 return response.json()
         except httpx.HTTPStatusError as e:
