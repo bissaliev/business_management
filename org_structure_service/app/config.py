@@ -10,6 +10,7 @@ class Settings(BaseSettings):
 
     USER_HOST: str
     USER_PORT: str
+    URL_TOKEN: str
 
     TEAM_HOST: str
     TEAM_PORT: str
