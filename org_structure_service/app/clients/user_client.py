@@ -1,30 +1,37 @@
 import httpx
-from fastapi import HTTPException
+from fastapi import HTTPException, status
 
 from app.config import settings
-from app.schemas.employees import UserResponse
 
 
-class UserServiceClient:
-    """ "Клиент для запросов на User Service"""
+class AuthClient:
+    """Клиент для запросов на User Service для аутентификации"""
 
     def __init__(self, base_url: str = settings.get_user_url()):
         self.base_url = base_url
 
-    async def get_user(self, employee_id: int) -> UserResponse:
+    async def _request(self, method: str, url: str, **kwargs) -> dict:
         try:
             async with httpx.AsyncClient(timeout=httpx.Timeout(10.0, connect=5.0)) as client:
-                response = await client.get(f"{self.base_url}/users/{employee_id}")
+                response = await client.request(method, url, **kwargs)
                 response.raise_for_status()
-                return UserResponse.model_validate(response.json())
+                return response.json()
         except httpx.HTTPStatusError as e:
-            if e.response.status_code == 404:
-                return None
+            if method == "GET" and "/verify" in url:
+                raise HTTPException(status_code=e.response.status_code, detail="Invalid token or user") from e
+            return None
+        except httpx.ConnectError as e:
             raise HTTPException(
-                status_code=502,
-                detail=f"Ошибка при получении пользователя: {e.response.status_code}, {e.response.text}",
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Сервис User service не доступен"
             ) from e
-        except httpx.RequestError as e:
-            raise HTTPException(
-                status_code=503, detail=f"Сервис пользователей недоступен: {e.__class__.__name__}"
-            ) from e
+
+    async def get_token(self, username, password) -> str | None:
+        """Получение токена аутентификации"""
+        response = await self._request(
+            "POST", f"{self.base_url}/auth/token", data={"username": username, "password": password}
+        )
+        return response["access_token"]
+
+    async def verify_token(self, token: str) -> dict:
+        """Верификация токена"""
+        return await self._request("GET", f"{self.base_url}/auth/verify", headers={"Authorization": f"Bearer {token}"})
