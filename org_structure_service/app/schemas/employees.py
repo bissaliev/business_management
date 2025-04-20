@@ -1,32 +1,18 @@
-from pydantic import BaseModel, EmailStr
-
-from app.models import EmployeeRole
-
-
-class UserResponse(BaseModel):
-    user_id: int
-    name: str
-    email: EmailStr
-    status: EmployeeRole
+from pydantic import BaseModel
 
 
 class EmployeeStructureCreate(BaseModel):
     employee_id: int
-    department_id: int | None = None
     position: str
-    manager_id: int | None = None
 
 
 class EmployeeStructureUpdate(BaseModel):
-    department_id: int | None = None
-    position: str | None = None
-    manager_id: int | None = None
+    position: str
 
 
 class EmployeeManagerCreate(BaseModel):
     """Добавление дополнительного менеджера"""
 
-    employee_structure_id: int
     manager_id: int
     context: str
 
@@ -34,7 +20,6 @@ class EmployeeManagerCreate(BaseModel):
 class AddManager(BaseModel):
     """Добавление руководителя"""
 
-    department_id: int
     manager_id: int
 
 
