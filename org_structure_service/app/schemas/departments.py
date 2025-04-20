@@ -6,7 +6,6 @@ from app.schemas.employees import EmployeeResponse
 class DepartmentCreate(BaseModel):
     """Модель для создания департамента"""
 
-    team_id: int
     name: str
     parent_id: int | None = None
     division_id: int | None = None
