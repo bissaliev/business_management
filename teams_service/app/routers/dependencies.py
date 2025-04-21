@@ -11,6 +11,7 @@ from app.schemas.users import EmployeeRole, User
 from app.services.employee_service import TeamEmployeeService
 from app.services.team_news_service import TeamNewsService
 from app.services.team_service import TeamService
+from app.services.webhook_service import WebHookService
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl=settings.URL_TOKEN)
 
@@ -34,6 +35,13 @@ def team_news_service(session: Annotated[AsyncSession, Depends(get_session)]):
 
 
 TeamNewsServiceDeps = Annotated[TeamNewsService, Depends(team_news_service)]
+
+
+def webhook_service_service(session: Annotated[AsyncSession, Depends(get_session)]):
+    return WebHookService(session)
+
+
+WebHookServiceDeps = Annotated[WebHookService, Depends(webhook_service_service)]
 
 AuthClientDeps = Annotated[AuthClient, Depends(lambda: AuthClient())]
 
