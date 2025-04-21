@@ -4,6 +4,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Setting(BaseSettings):
     TEAM_HOST: str
     TEAM_PORT: str
+    TEAM_API_KEY: str
     POSTGRES_USER: str
     POSTGRES_PASSWORD: str
     POSTGRES_DB: str
