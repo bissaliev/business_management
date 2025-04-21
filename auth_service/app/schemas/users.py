@@ -9,6 +9,11 @@ class UserUpdate(BaseModel):
     password: str | None = None
 
 
+class UserRestore(BaseModel):
+    email: EmailStr
+    password: str
+
+
 class UserCreate(BaseModel):
     name: str
     email: EmailStr
