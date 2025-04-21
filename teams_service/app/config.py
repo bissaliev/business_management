@@ -5,6 +5,7 @@ class Setting(BaseSettings):
     SECRET_KEY: str
     USER_HOST: str
     USER_PORT: str
+    USER_API_KEY: str
     URL_TOKEN: str
     POSTGRES_USER: str
     POSTGRES_PASSWORD: str
