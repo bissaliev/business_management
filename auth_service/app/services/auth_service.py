@@ -24,7 +24,11 @@ class AuthService:
         password = user_data.pop("password")
         hashed_password = get_password_hash(password)
         user_data["hashed_password"] = hashed_password
-        return await self.repo.create(user_data)
+        team_code = user_data.pop("team_code")
+        user = await self.repo.create(**user_data)
+        team = await self.team_client.add_employee_to_team(user.id, str(team_code))
+        user.team_id = team["team_id"]
+        return user
 
     async def authenticate_user(self, email: str, password: str):
         user = await self.repo.get_user_by_email(email)
