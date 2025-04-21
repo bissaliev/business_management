@@ -3,6 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.users import User
 from app.repositories.user_repo import UserRepository
+from app.security import verify_password
 
 
 class UserService:
@@ -27,7 +28,7 @@ class UserService:
         """Обновление данных пользователя"""
         if not await self.repo.exists(id):
             raise HTTPException(status_code=404, detail="Пользователь не найден")
-        return await self.repo.update(id, user_data)
+        return await self.repo.update(id, **user_data)
 
     async def soft_delete_user(self, id: int) -> None:
         """Удаление пользователя с возможностью восстановления"""
@@ -35,8 +36,11 @@ class UserService:
             raise HTTPException(status_code=404, detail="Пользователь не найден")
         await self.repo.soft_delete(id)
 
-    async def restore_user(self, id: int) -> None:
+    async def restore_user(self, user_data: dict) -> None:
         """Восстановление пользователя"""
-        if not await self.repo.exists(id):
+        user = await self.repo.get_user_by_email(user_data["email"])
+        if not user:
             raise HTTPException(status_code=404, detail="Пользователь не найден")
-        await self.repo.restore(id)
+        if not verify_password(user_data["password"], user.hashed_password):
+            raise HTTPException(status_code=400, detail="неверный пароль")
+        await self.repo.restore(user.id)
