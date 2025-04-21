@@ -1,6 +1,6 @@
 import enum
 
-from pydantic import BaseModel, EmailStr
+from pydantic import UUID4, BaseModel, EmailStr
 
 
 class UserUpdate(BaseModel):
@@ -13,7 +13,7 @@ class UserCreate(BaseModel):
     name: str
     email: EmailStr
     password: str
-    team_id: int
+    team_code: UUID4
 
 
 class UserResponse(BaseModel):
