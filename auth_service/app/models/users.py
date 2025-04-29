@@ -1,7 +1,7 @@
 import enum
 from datetime import datetime
 
-from sqlalchemy import Enum, String
+from sqlalchemy import DateTime, Enum, String
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.database import Base
@@ -21,5 +21,5 @@ class User(Base):
     status: Mapped[Status] = mapped_column(Enum(Status, native_enum=False), default=Status.USER)
     hashed_password: Mapped[str] = mapped_column(String, nullable=False)
     is_active: Mapped[bool] = mapped_column(default=True)
-    deleted_at: Mapped[datetime | None] = None
+    deleted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     team_id: Mapped[int | None] = None
