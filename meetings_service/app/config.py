@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -18,6 +20,9 @@ class Setting(BaseSettings):
     CALENDAR_HOST: str
     CALENDAR_PORT: str
     API_KEY_CALENDAR: str
+
+    LOG_DIR: Path = Path(__file__).parent.parent / "logs"
+    LOG_DIR.mkdir(parents=True, exist_ok=True)
 
     model_config = SettingsConfigDict(env_file=".env")
 
