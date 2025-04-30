@@ -1,4 +1,5 @@
 import asyncio
+import logging
 from logging.config import fileConfig
 
 from alembic import context
@@ -6,29 +7,21 @@ from sqlalchemy import pool
 from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
 
-import app.models.events  # noqa: F401
+import app.models.events  # noqa: F401 загружаем модели для Alembic
 from app.database import DATABASE_URL, Base
 
-# this is the Alembic Config object, which provides
-# access to the values within the .ini file in use.
+logger = logging.getLogger("alembic.env")
 config = context.config
 
-# Interpret the config file for Python logging.
-# This line sets up loggers basically.
+if not DATABASE_URL:
+    logger.error("Переменная DATABASE_URL не задана")
+    raise ValueError("Переменная DATABASE_URL не задана")
+config.set_main_option("sqlalchemy.url", DATABASE_URL)
+
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-# add your model's MetaData object here
-# for 'autogenerate' support
-# from myapp import mymodel
-# target_metadata = mymodel.Base.metadata
-config.set_main_option("sqlalchemy.url", DATABASE_URL)
 target_metadata = Base.metadata
-
-# other values from the config, defined by the needs of env.py,
-# can be acquired:
-# my_important_option = config.get_main_option("my_important_option")
-# ... etc.
 
 
 def run_migrations_offline() -> None:
@@ -43,6 +36,7 @@ def run_migrations_offline() -> None:
     script output.
 
     """
+    logger.info("Выполнение миграций в автономном режиме")
     url = config.get_main_option("sqlalchemy.url")
     context.configure(
         url=url,
@@ -56,7 +50,7 @@ def run_migrations_offline() -> None:
 
 
 def do_run_migrations(connection: Connection) -> None:
-    context.configure(connection=connection, target_metadata=target_metadata)
+    context.configure(connection=connection, target_metadata=target_metadata, compare_type=True)
 
     with context.begin_transaction():
         context.run_migrations()
@@ -83,6 +77,7 @@ async def run_async_migrations() -> None:
 def run_migrations_online() -> None:
     """Run migrations in 'online' mode."""
 
+    logger.info("Выполнение миграций в онлайн-режиме")
     asyncio.run(run_async_migrations())
 
 
