@@ -19,8 +19,8 @@ class EventWebhookService:
         """Удаление события"""
         await self.repo.delete_by_source(**event_data.model_dump())
 
-    async def verify_event(self, event_data: EventParams) -> None:
+    async def has_events_in_period(self, event_data: EventParams) -> None:
         """Проверка на существование события в определенный период"""
-        event = await self.repo.verify_event(**event_data.model_dump())
+        event = await self.repo.has_events_in_period(**event_data.model_dump())
         if not event:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found event")

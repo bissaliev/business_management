@@ -19,7 +19,7 @@ async def handle_new_event_webhook(event_data: NewEventHook, event_service: Even
 async def handle_verify_event_webhook(
     event_data: Annotated[EventParams, Query()], event_service: EventWebhookServiceDeps
 ):
-    await event_service.verify_event(event_data)
+    await event_service.has_events_in_period(event_data)
     return JSONResponse(content={"exists": True}, status_code=status.HTTP_200_OK)
 
 
