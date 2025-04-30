@@ -17,7 +17,7 @@ from app.services.task_service import TaskService
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl=settings.URL_TOKEN)
 
 
-async def task_service(session: Annotated[AsyncSession, Depends(get_session)]):
+async def task_service(session: Annotated[AsyncSession, Depends(get_session)]) -> TaskService:
     """Функция для внедрения в зависимости сервис TaskService"""
     return TaskService(session)
 
@@ -25,7 +25,7 @@ async def task_service(session: Annotated[AsyncSession, Depends(get_session)]):
 TaskServiceDeps = Annotated[TaskService, Depends(task_service)]
 
 
-async def comment_service(session: Annotated[AsyncSession, Depends(get_session)]):
+async def comment_service(session: Annotated[AsyncSession, Depends(get_session)]) -> CommentService:
     """Функция для внедрения в зависимости сервис TaskService"""
     return CommentService(session)
 
@@ -33,7 +33,7 @@ async def comment_service(session: Annotated[AsyncSession, Depends(get_session)]
 CommentServiceDeps = Annotated[CommentService, Depends(comment_service)]
 
 
-async def evaluation_service(session: Annotated[AsyncSession, Depends(get_session)]):
+async def evaluation_service(session: Annotated[AsyncSession, Depends(get_session)]) -> TaskEvaluationService:
     """Функция для внедрения в зависимости сервис TaskService"""
     return TaskEvaluationService(session)
 
@@ -44,7 +44,7 @@ UserClientDeps = Annotated[UserServiceClient, Depends(lambda: UserServiceClient(
 
 
 async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)], user_client: UserClientDeps) -> User:
-    """Проверяет токен через User Service, возвращает данные (id, status, team_role)."""
+    """Проверяет токен через User Service, возвращает данные (id, status, is_active, team_id, team_role)."""
     user_data = await user_client.verify_token(token)
     if not user_data["is_active"]:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Inactive user")
@@ -81,7 +81,7 @@ async def current_task(
 CurrentTask = Annotated[Task, Depends(current_task)]
 
 
-async def require_task_assignee(task: CurrentTask, user: CurrentUser):
+async def require_task_assignee(task: CurrentTask, user: CurrentUser) -> User:
     """
     Разрешает редактирование/комментирование задачи исполнителю (assignee_id), руководителям и администратору.
     """
@@ -93,7 +93,7 @@ async def require_task_assignee(task: CurrentTask, user: CurrentUser):
 AssigneePermission = Depends(require_task_assignee)
 
 
-async def check_team_member_detail(task: CurrentTask, user: Annotated[User, Depends(get_current_user)]):
+async def check_team_member_detail(task: CurrentTask, user: Annotated[User, Depends(get_current_user)]) -> None:
     """
     Разрешает действия только участникам команды на основе атрибута задачи team_id.
     """
