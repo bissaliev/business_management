@@ -10,7 +10,12 @@ from app.schemas.team_structures import (
 router = APIRouter()
 
 
-@router.post("/team-structure/", dependencies=[AdminDeps], summary="Создание типа структуры команды")
+@router.post(
+    "/team-structure/",
+    response_model=TeamStructureResponseShort,
+    dependencies=[AdminDeps],
+    summary="Создание типа структуры команды",
+)
 async def set_team_structure(
     structure: TeamStructureCreate, org_structure_service: OrgStructureServiceDeps
 ) -> TeamStructureResponseShort:
@@ -18,13 +23,17 @@ async def set_team_structure(
     return new_team_structure
 
 
-@router.get("/structure/{team_id}", summary="Получение иерархии команды")
+@router.get("/structure/{team_id}", response_model=TeamStructureResponse, summary="Получение иерархии команды")
 async def get_team_structure(team_id: int, org_structure_service: OrgStructureServiceDeps) -> TeamStructureResponse:
     hierarchy = await org_structure_service.get_team_structure(team_id)
     return hierarchy
 
 
-@router.get("/team-structures/", summary="Получение зарегистрированных организационных структур")
+@router.get(
+    "/team-structures/",
+    response_model=list[TeamStructureResponseShort],
+    summary="Получение зарегистрированных организационных структур",
+)
 async def get_team_structure_all(org_structure_service: OrgStructureServiceDeps) -> list[TeamStructureResponseShort]:
     team_structures = await org_structure_service.get_team_structure_all()
     return team_structures
