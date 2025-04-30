@@ -4,6 +4,7 @@ from sqlalchemy import delete, exists, insert, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import Base
+from app.logging_config import logger
 
 ModelType = TypeVar("ModelType", bound=Base)
 
@@ -37,11 +38,13 @@ class BaseRepository(Generic[ModelType]):
         return result.scalar_one_or_none()
 
     async def delete(self, reference: int) -> bool:
+        logger.info(f"Удаление записи из {self.model.__name__} с идентификатором {reference}, ")
         stmt = delete(self.model).where(self.model.id == reference)
         result = await self.session.execute(stmt)
+        logger.info(f"Успешно удаленно {result.rowcount} записей")
         return result.rowcount > 0
 
     async def exists(self, reference: int) -> bool:
-        stmt = select(exists(self.model).where(self.model.id == reference))
+        stmt = select(exists().where(self.model.id == reference))
         result = await self.session.scalar(stmt)
         return result
