@@ -6,7 +6,11 @@ from app.schemas.task_evaluation import EmployeeEvaluationSummary, TaskEvaluatio
 router = APIRouter()
 
 
-@router.get("/evaluations/current-employee", summary="Получение работников матрицы своих оценок")
+@router.get(
+    "/evaluations/current-employee",
+    response_model=EmployeeEvaluationSummary,
+    summary="Получение работников матрицы своих оценок",
+)
 async def get_my_evaluation(
     user: CurrentUser, evaluation_service: TaskEvaluationServiceDeps
 ) -> EmployeeEvaluationSummary:
@@ -14,7 +18,11 @@ async def get_my_evaluation(
     return evaluations
 
 
-@router.post("/{task_id}/evaluations", summary="Получение оценок работника")
+@router.post(
+    "/{task_id}/evaluations",
+    response_model=TaskEvaluationOut,
+    summary="Создание оценки работника за выполненную задачу",
+)
 async def create_evaluation(
     task_id: int,
     evaluation_data: TaskEvaluationCreate,
