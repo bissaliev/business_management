@@ -16,7 +16,7 @@ async def get_users(user_service: UserServiceDeps) -> list[UserResponse]:
     return await user_service.get_users()
 
 
-@router.get("/{id}", response_model=UserResponse, dependencies=[RequiredAdminDeps], summary="Получение пользователя")
+@router.get("/{id}", response_model=UserResponse, summary="Получение пользователя")
 async def get_user(id: int, user_service: UserServiceDeps) -> UserResponse:
     return await user_service.get_user(id)
 
