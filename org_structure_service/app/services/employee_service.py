@@ -1,8 +1,8 @@
 from fastapi import HTTPException, status
-from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.clients.team_client import TeamServiceClient
+from app.logging_config import logger
 from app.models import EmployeeManagers, EmployeeRole, EmployeeStructure
 from app.repositories.department_repo import DepartmentRepository
 from app.repositories.employee_manager_repo import EmployeeManagerRepository
@@ -28,11 +28,10 @@ class EmployeeService:
                 status_code=status.HTTP_400_BAD_REQUEST, detail="Работник уже зарегистрирован в данном департаменте"
             )
         await self._get_employee_from_team_service_or_404(department.team_id, employee_data.employee_id)
-        try:
-            employee = await self.repo.add(department_id=department_id, **employee_data.model_dump())
-            return employee
-        except SQLAlchemyError as e:
-            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)) from e
+        employee = await self.repo.add(department_id=department_id, **employee_data.model_dump())
+        await self.session.commit()
+        logger.info(f"Работник {employee_data.employee_id} добавлен в департамент {department_id=}")
+        return employee
 
     async def update_position(
         self, department_id: int, employee_id: int, employee_data: EmployeeStructureUpdate
@@ -40,10 +39,10 @@ class EmployeeService:
         """Обновление позиции работника"""
         await self._get_department_or_404(department_id)
         await self.employee_in_department__or_404(department_id, employee_id)
-        try:
-            return await self.repo.update_employee(employee_id, **employee_data.model_dump())
-        except SQLAlchemyError as e:
-            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)) from e
+        employee = await self.repo.update_employee(employee_id, **employee_data.model_dump())
+        await self.session.commit()
+        logger.info(f"Обновление позиции работника {employee_id=} в департамент {department_id=}")
+        return employee
 
     async def get_employees(self, department_id: int) -> list[EmployeeStructure]:
         """Получить список всех сотрудников"""
@@ -60,13 +59,12 @@ class EmployeeService:
             )
         return employee
 
-    async def delete_employee(self, department_id: int, employee_id: int):
+    async def delete_employee(self, department_id: int, employee_id: int) -> None:
         """Удаление работника"""
         await self.employee_in_department__or_404(department_id, employee_id)
-        try:
-            return await self.repo.delete_employee(employee_id, department_id)
-        except SQLAlchemyError as e:
-            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)) from e
+        await self.repo.delete_employee(employee_id, department_id)
+        await self.session.commit()
+        logger.info(f"Удаление работника {employee_id=} из департамента {department_id=}")
 
     async def get_department_members(self, employee_id: int) -> list[EmployeeStructure]:
         """Получить всех коллег департамента сотрудника"""
@@ -84,10 +82,9 @@ class EmployeeService:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST, detail="Данный работник не является менеджером"
             )
-        try:
-            await self.repo.add_manager(department_id, **data.model_dump())
-        except SQLAlchemyError as e:
-            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)) from e
+        await self.repo.add_manager(department_id, **data.model_dump())
+        await self.session.commit()
+        logger.info(f"В департамент {department_id=} назначен руководитель {data.manager_id}")
 
     async def add_extra_manager(
         self, department_id: int, employee_id: int, data: EmployeeManagerCreate
@@ -101,13 +98,10 @@ class EmployeeService:
             )
 
         employee_structure = await self.get_employee(department_id, employee_id)
-        try:
-            emp_man = await self.extra_manager_repo.add(
-                employee_structure_id=employee_structure.id, **data.model_dump()
-            )
-            return emp_man
-        except SQLAlchemyError as e:
-            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)) from e
+        emp_man = await self.extra_manager_repo.add(employee_structure_id=employee_structure.id, **data.model_dump())
+        await self.session.commit()
+        logger.info(f"В департамент {department_id=} назначен дополнительный руководитель {data.manager_id}")
+        return emp_man
 
     async def _get_department_or_404(self, department_id: int):
         """Проверка на существование департамента"""
@@ -126,5 +120,6 @@ class EmployeeService:
         return employee
 
     async def employee_in_department__or_404(self, department_id: int, employee_id: int) -> None:
+        """Проверка на существование работника в департаменте"""
         if not await self.repo.exists_in_department(employee_id, department_id):
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Работника не существует")
