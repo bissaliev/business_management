@@ -2,6 +2,7 @@ import httpx
 from fastapi import HTTPException, status
 
 from app.config import settings
+from app.logging_config import logger
 
 BASE_URL_CALENDAR = settings.get_calendar_url()
 
@@ -28,10 +29,12 @@ class CalendarServiceClient:
                 return response.status_code == status.HTTP_200_OK
         except httpx.HTTPStatusError as e:
             # Специальная обработка 404 только для verify
+            logger.error(f"Ошибка при запросе {e.request.url}: {e}")
             if method == "GET" and response.status_code == status.HTTP_404_NOT_FOUND:
                 return False
             raise HTTPException(status_code=e.response.status_code, detail="Неизвестная ошибка") from e
         except httpx.ConnectError as e:
+            logger.error(f"Сервис Calendar service не доступен: {e}")
             raise HTTPException(
                 status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Сервис Calendar service не доступен"
             ) from e
@@ -44,6 +47,6 @@ class CalendarServiceClient:
         """Удаление события о встрече"""
         return await self._request("DELETE", "/webhooks/remove-event", params=meeting)
 
-    async def verify_event_webhook(self, meeting: dict) -> bool:
+    async def has_events_in_period(self, meeting: dict) -> bool:
         """Проверка назначенных событий у пользователя в заданный период"""
         return await self._request("GET", "/webhooks/verify-event", params=meeting)
