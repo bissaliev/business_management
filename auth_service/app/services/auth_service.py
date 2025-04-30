@@ -2,6 +2,7 @@ from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.clients.team_client import TeamServiceClient
+from app.logging_config import logger
 from app.models.users import Status
 from app.repositories.user_repo import UserRepository
 from app.schemas.users import Token
@@ -36,6 +37,7 @@ class AuthService:
         role = await self.team_client.get_employee_role(user.id, user.team_id)
         data |= role
         access_token = create_access_token(data=data)
+        logger.info(f"Пользователь {user.email} успешно вошел в систему")
         return Token(access_token=access_token, token_type="bearer")
 
     async def get_current_user(self, token: str) -> dict:
