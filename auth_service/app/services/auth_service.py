@@ -76,6 +76,7 @@ class AuthService:
             "name": user.name,
             "email": user.email,
             "team_id": user.team_id,
+            "is_active": user.is_active,
             "status": user.status,
             "role": payload["role"],
         }
