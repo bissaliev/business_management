@@ -1,7 +1,8 @@
 import httpx
-from fastapi import HTTPException
+from fastapi import HTTPException, status
 
 from app.config import settings
+from app.logging_config import logger
 
 BASE_ORG_URL = settings.get_org_url()
 
@@ -20,11 +21,17 @@ class OrgServiceClient:
                 response.raise_for_status()
                 return response.json()
         except httpx.HTTPStatusError as e:
-            if e.response.status_code == 404:
-                raise HTTPException(status_code=404, detail=f"Работник с {employee_id} не существует") from e
+            logger.error(f"Ошибка при запросе {e.request.url}: {e}")
+            if e.response.status_code == status.HTTP_404_NOT_FOUND:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND, detail=f"Работник с {employee_id} не существует"
+                ) from e
             raise HTTPException(
-                status_code=500,
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail=f"Ошибка при получении работника: {e.response.status_code}, {e.response.text}",
             ) from e
         except httpx.ConnectError as e:
-            raise HTTPException(status_code=503, detail="Сервис Org Structure service не доступен") from e
+            logger.error(f"Сервис Calendar service не доступен: {e}")
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Сервис Org Structure service не доступен"
+            ) from e
