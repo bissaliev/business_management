@@ -1,8 +1,8 @@
 from fastapi import HTTPException, status
-from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.clients.team_client import TeamServiceClient
+from app.logging_config import logger
 from app.models.tasks import Task, TaskStatus
 from app.repositories.task_repo import TaskRepository
 from app.schemas.tasks import TaskCreate, TaskUpdate
@@ -18,9 +18,10 @@ class BaseTaskService:
         self.team_client = TeamServiceClient()
 
     async def _get_task_or_404(self, task_id: int) -> Task:
+        """Получение объекта Task или выброс исключения 404"""
         task = await self.repo.get(task_id)
         if not task:
-            raise HTTPException(status_code=404, detail="Задача не найдена")
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Задача не найдена")
         return task
 
     async def get_tasks(self, team_id: int) -> list[Task]:
@@ -40,11 +41,10 @@ class BaseTaskService:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST, detail="Исполнитель не является членом команды"
             )
-        try:
-            task = await self.repo.create(**task_data.model_dump(exclude_unset=True), creator_id=user.id)
-            return task
-        except SQLAlchemyError as e:
-            HTTPException(status_code=500, detail=str(e))
+        task = await self.repo.create(**task_data.model_dump(exclude_unset=True), creator_id=user.id)
+        await self.session.commit()
+        logger.info(f"Создание задачи {task.id=}")
+        return task
 
     async def update_task(self, task_id: int, update_data: TaskUpdate) -> Task:
         """Обновление задачи"""
@@ -52,9 +52,13 @@ class BaseTaskService:
         if update_data.assignee_id:
             membership = await self.team_client.get_employee(task.team_id, update_data.assignee_id)
             if not membership:
-                raise HTTPException(status_code=400, detail="Новый исполнитель не является членом команды")
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST, detail="Новый исполнитель не является членом команды"
+                )
 
         updated_task = await self.repo.update(task_id, **update_data.model_dump(exclude_unset=True))
+        await self.session.commit()
+        logger.info(f"Обновление задачи {task_id=}")
         return updated_task
 
     async def delete_task(self, user: User, task_id: int) -> None:
@@ -62,8 +66,10 @@ class BaseTaskService:
         task = await self._get_task_or_404(task_id)
         # Удаляем только завершённые
         if task.status != TaskStatus.COMPLETED:
-            raise HTTPException(status_code=400, detail="Задача еще не завершена")
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Задача еще не завершена")
         await self.repo.delete(task_id)
+        await self.session.commit()
+        logger.info(f"Удаление задачи {task.id=}")
         return task
 
     async def get_assigned_tasks(self, user: User) -> list[Task]:
