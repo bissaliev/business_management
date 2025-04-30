@@ -47,6 +47,7 @@ class UserResponse(BaseModel):
 class UserTokenResponse(UserResponse):
     """Модель ответа для пользователя со статусом доступа"""
 
+    is_active: bool
     role: "EmployeeRole" = EmployeeRole.EMPLOYEE
     status: Status
 
