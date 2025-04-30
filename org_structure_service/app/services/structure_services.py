@@ -2,6 +2,7 @@ from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.clients.team_client import TeamServiceClient
+from app.logging_config import logger
 from app.models import TeamStructure
 from app.repositories.team_structure_repo import TeamStructureRepository
 from app.schemas.team_structures import TeamStructureCreate, TeamStructureResponse
@@ -34,6 +35,8 @@ class OrgStructureService:
                 detail=f"Структура команды с team_id={structure_data.team_id} уже существует",
             )
         team_structure = await self.repo.add(**structure_data.model_dump())
+        await self.session.commit()
+        logger.info(f"Зарегистрирована организационная структура для команды {structure_data.team_id}")
         return team_structure
 
     async def get_team_structure(self, team_id: int) -> TeamStructureResponse:
