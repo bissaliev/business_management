@@ -1,7 +1,7 @@
 from fastapi import HTTPException, status
-from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.logging_config import logger
 from app.models import Division, TeamStructure
 from app.repositories.division_repo import DivisionRepository
 from app.repositories.team_structure_repo import TeamStructureRepository
@@ -25,36 +25,32 @@ class DivisionService:
     async def get_division(self, team_id: int, division_id: int) -> Division:
         """Получение дивизии"""
         await self._get_team_or_404(team_id)
-        division = await self.repo.get(division_id)
-        if not division:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail=f"Дивизии с id={division_id} не существует"
-            )
-        return division
+        return await self._get_division_or_404(team_id, division_id)
 
     async def create_division(self, team_id: int, division_data: DivisionCreate) -> Division:
         """Создание дивизии"""
         await self._get_team_structure(team_id)
-        try:
-            department = await self.repo.add(team_id=team_id, **division_data.model_dump())
-            return department
-        except SQLAlchemyError as e:
-            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Ошибка  базы данных") from e
+        division = await self.repo.add(team_id=team_id, **division_data.model_dump())
+        await self.session.commit()
+        logger.info(f"Создана дивизия {division.id=}")
+        return division
 
     async def update_division(self, team_id: int, division_id: int, update_data: DivisionUpdate) -> Division:
         """Обновление дивизии"""
         await self._get_team_or_404(team_id)
         await self._get_division_or_404(team_id, division_id)
-        try:
-            return await self.repo.update(division_id, **update_data.model_dump(exclude_unset=True))
-        except SQLAlchemyError as e:
-            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Ошибка  базы данных") from e
+        division = await self.repo.update(division_id, **update_data.model_dump(exclude_unset=True))
+        await self.session.commit()
+        logger.info(f"Обновлена дивизия {division_id=}")
+        return division
 
     async def delete_division(self, team_id: int, division_id: int) -> None:
         """Удаление дивизии"""
         await self._get_team_or_404(team_id)
         await self._get_division_or_404(team_id, division_id)
         await self.repo.delete_division(team_id, division_id)
+        await self.session.commit()
+        logger.info(f"Удалена дивизия {division_id=}")
 
     async def _get_team_or_404(self, team_id: int) -> TeamStructure:
         """Получить команду либо вызвать ошибку 404"""
