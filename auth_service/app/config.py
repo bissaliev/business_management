@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -13,6 +15,9 @@ class Setting(BaseSettings):
     SECRET_KEY: str
     ALGORITHM: str
     ACCESS_TOKEN_EXPIRE_MINUTES: int
+
+    LOG_DIR: Path = Path(__file__).parent.parent / "logs"
+    LOG_DIR.mkdir(parents=True, exist_ok=True)
 
     model_config = SettingsConfigDict(env_file=".env")
 
