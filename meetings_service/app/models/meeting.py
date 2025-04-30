@@ -1,5 +1,4 @@
-from datetime import datetime
-from zoneinfo import ZoneInfo
+from datetime import datetime, timezone
 
 from sqlalchemy import DateTime, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -17,9 +16,7 @@ class Meeting(Base):
     end_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     team_id: Mapped[int] = mapped_column(Integer, nullable=False)  # Команда
     creator_id: Mapped[int] = mapped_column(Integer, nullable=False)  # Создатель
-    created_at: Mapped[datetime] = mapped_column(
-        default=lambda: datetime.now(ZoneInfo("UTC")), type_=DateTime(timezone=True)
-    )
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
     participants: Mapped[list["MeetingParticipant"]] = relationship(
         back_populates="meeting", cascade="all, delete-orphan"
     )
