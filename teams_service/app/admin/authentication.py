@@ -3,6 +3,7 @@ from starlette.requests import Request
 
 from app.clients.user_client import AuthClient
 from app.config import settings
+from app.logging_config import logger
 from app.schemas.users import Status
 
 
@@ -21,6 +22,7 @@ class AdminAuth(AuthenticationBackend):
 
         if token:
             request.session.update({"token": token})
+            logger.info(f"Администратор {username} вошел в систему")
             return True
         return False
 
