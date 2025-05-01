@@ -16,28 +16,28 @@ from app.services.webhook_service import WebHookService
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl=settings.URL_TOKEN)
 
 
-def team_service(session: Annotated[AsyncSession, Depends(get_session)]):
+def team_service(session: Annotated[AsyncSession, Depends(get_session)]) -> TeamService:
     return TeamService(session)
 
 
 TeamServiceDeps = Annotated[TeamService, Depends(team_service)]
 
 
-def team_employee_service(session: Annotated[AsyncSession, Depends(get_session)]):
+def team_employee_service(session: Annotated[AsyncSession, Depends(get_session)]) -> TeamEmployeeService:
     return TeamEmployeeService(session)
 
 
 TeamEmployeeServiceDeps = Annotated[TeamEmployeeService, Depends(team_employee_service)]
 
 
-def team_news_service(session: Annotated[AsyncSession, Depends(get_session)]):
+def team_news_service(session: Annotated[AsyncSession, Depends(get_session)]) -> TeamNewsService:
     return TeamNewsService(session)
 
 
 TeamNewsServiceDeps = Annotated[TeamNewsService, Depends(team_news_service)]
 
 
-def webhook_service_service(session: Annotated[AsyncSession, Depends(get_session)]):
+def webhook_service_service(session: Annotated[AsyncSession, Depends(get_session)]) -> WebHookService:
     return WebHookService(session)
 
 
@@ -47,7 +47,7 @@ AuthClientDeps = Annotated[AuthClient, Depends(lambda: AuthClient())]
 
 
 async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)], user_client: AuthClientDeps) -> User:
-    """Проверяет токен через User Service, возвращает данные (id, email, status, team_role)."""
+    """Проверяет токен через User Service, возвращает данные (id, email, status, is_active, team_id, team_role)."""
     user_data = await user_client.verify_token(token)
     if not user_data["is_active"]:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Inactive user")
@@ -59,7 +59,7 @@ CurrentUser = Annotated[User, Depends(get_current_user)]
 
 async def require_admin(team_id: int, user: Annotated[User, Depends(get_current_user)]) -> User:
     """
-    Разрешает действия только админам руководителям команды (role="менеджер", "админ")"""
+    Разрешает действия только администраторам команды"""
     if not (user.team_id and user.team_id == team_id):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Не достаточно прав")
     if user.role != EmployeeRole.ADMINISTRATOR:
