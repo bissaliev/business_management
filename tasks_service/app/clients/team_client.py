@@ -1,17 +1,19 @@
 import httpx
-from fastapi import HTTPException
+from fastapi import HTTPException, status
 
 from app.config import settings
+from app.logging_config import logger
 
 BASE_TEAM_URL = settings.get_team_url()
 
 
 class TeamServiceClient:
+    """Клиент для взаимодействия с сервисом Team Service"""
+
     def __init__(self, base_url: str = BASE_TEAM_URL):
         self.base_url = base_url
-        self.client = httpx.AsyncClient()
 
-    async def get_employee(self, team_id: int, user_id: int):
+    async def get_employee(self, team_id: int, user_id: int) -> dict:
         """Получение работника из Team Service"""
         try:
             async with httpx.AsyncClient(timeout=httpx.Timeout(10.0, connect=5.0)) as client:
@@ -19,30 +21,17 @@ class TeamServiceClient:
                 response.raise_for_status()
                 return response.json()
         except httpx.HTTPStatusError as e:
-            if e.response.status_code == 404:
-                # return {}
-                raise HTTPException(status_code=404, detail=f"Работник с {user_id} не существует") from e
+            logger.info(f"Ошибка при запросе на {e.request.url}: {e}")
+            if e.response.status_code == status.HTTP_404_NOT_FOUND:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND, detail=f"Работник с {user_id} не существует"
+                ) from e
             raise HTTPException(
-                status_code=500,
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail=f"Ошибка при получении работника: {e.response.status_code}, {e.response.text}",
             ) from e
         except httpx.ConnectError as e:
-            raise HTTPException(status_code=503, detail="Сервис Team service не доступен") from e
-
-    async def get_membership(self, user_id: int, team_id: int) -> dict:
-        try:
-            response = await self.client.get(f"{self.base_url}/api/v1/teams/{team_id}/members/{user_id}")
-            response.raise_for_status()
-            return response.json()
-        except httpx.HTTPStatusError as e:
-            if e.response.status_code == 404:
-                return {}
-            raise HTTPException(status_code=e.response.status_code, detail="Team service error") from e
-
-    async def get_team_members(self, team_id: int) -> list[dict]:
-        try:
-            response = await self.client.get(f"{self.base_url}/api/v1/teams/{team_id}/members")
-            response.raise_for_status()
-            return response.json()
-        except httpx.HTTPStatusError as e:
-            raise HTTPException(status_code=e.response.status_code, detail="Team service error") from e
+            logger.info("Сервис Team service не доступен")
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Сервис Team service не доступен"
+            ) from e
