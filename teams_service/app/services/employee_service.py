@@ -2,6 +2,7 @@ from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.clients.user_client import UserServiceClient
+from app.logging_config import logger
 from app.models.teams import TeamEmployee
 from app.repositories.team_employee_repo import TeamEmployeeRepository
 from app.repositories.team_repo import TeamRepository
@@ -22,6 +23,8 @@ class TeamEmployeeService:
         await self._exists_team(team_id)
         new_user = await self.user_client.create_user(**data.model_dump(exclude=["role"]), team_id=team_id)
         new_employee = await self.repo.create(team_id=team_id, employee_id=new_user.id, role=data.role)
+        await self.session.commit()
+        logger.info(f"Зарегистрирован работник {new_employee.employee_id} в команде {team_id}")
         return new_employee
 
     async def get_team_employees(self, team_id: int) -> TeamEmployee:
@@ -42,6 +45,8 @@ class TeamEmployeeService:
         """Обновление роли работника"""
         await self._exists_employee_team(team_id, employee_id)
         update_employee = await self.repo.update_role(team_id, employee_id, role.model_dump())
+        await self.session.commit()
+        logger.info(f"Обновлена роль работника {employee_id} в команде {team_id}")
         return update_employee
 
     async def delete_employee(self, team_id: int, employee_id: int) -> None:
@@ -49,6 +54,8 @@ class TeamEmployeeService:
         await self._exists_employee_team(team_id, employee_id)
         await self.user_client.delete_user(employee_id)
         await self.repo.delete_employee(team_id, employee_id)
+        await self.session.commit()
+        logger.info(f"Удален работник {employee_id} из команды {team_id}")
 
     async def _exists_employee_team(self, team_id: int, employee_id: int) -> None:
         """Проверка на существование работника в команде"""
@@ -57,7 +64,7 @@ class TeamEmployeeService:
                 status_code=status.HTTP_404_NOT_FOUND, detail="Работника не существует в данной команде"
             )
 
-    async def _exists_team(self, team_id: int) -> bool:
+    async def _exists_team(self, team_id: int) -> None:
         """Проверка на существование команды"""
         if not await self.team_repo.exists(team_id):
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Команды не существует")
