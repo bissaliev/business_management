@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -12,6 +14,9 @@ class Setting(BaseSettings):
     POSTGRES_DB: str
     DB_HOST: str
     DB_PORT: str
+
+    LOG_DIR: Path = Path(__file__).parent.parent / "logs"
+    LOG_DIR.mkdir(parents=True, exist_ok=True)
 
     model_config = SettingsConfigDict(env_file=".env")
 
