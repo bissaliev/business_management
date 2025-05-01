@@ -2,8 +2,9 @@ from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.clients.org_client import OrgServiceClient
+from app.logging_config import logger
 from app.models.task_evaluation import TaskEvaluation
-from app.models.tasks import TaskStatus
+from app.models.tasks import Task, TaskStatus
 from app.repositories.task_evaluation_repo import TaskEvaluationRepository
 from app.repositories.task_repo import TaskRepository
 from app.schemas.task_evaluation import EmployeeEvaluationSummary, TaskEvaluationCreate
@@ -25,25 +26,23 @@ class TaskEvaluationService:
     ) -> TaskEvaluation:
         """Создание записи оценки задачи"""
         # Проверяем задачу
-        task = await self.task_repo.get(task_id)
-        if not task:
-            raise HTTPException(status_code=404, detail="Задачи не существует")
-        if task.status != TaskStatus.COMPLETED:
-            raise HTTPException(status_code=400, detail="Может оценивать только выполненные задания")
+        task = await self._get_completed_task_or_404(task_id)
 
         # Проверяем, что оценка ещё не выставлена
-        if await self.repo.exists_by_task_id(task_id):
+        if await self.repo.exists_by_task_id(task.id):
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Задача уже оценена")
 
         # Создаём среднюю оценку
         average_score = (evaluation_data.timeliness + evaluation_data.quality + evaluation_data.completeness) / 3
         evaluation = await self.repo.create(
-            task_id=task_id,
+            task_id=task.id,
             employee_id=task.assignee_id,
             evaluator_id=user.id,
             average_score=average_score,
             **evaluation_data.model_dump(),
         )
+        await self.session.commit()
+        logger.info(f"Менеджер {user.id} поставил оценку работнику {task.assignee_id}")
         return evaluation
 
     async def get_evaluations(self, user: User) -> EmployeeEvaluationSummary:
@@ -68,3 +67,12 @@ class TaskEvaluationService:
             average_department_score=average_department_score,
             evaluations=evaluations,
         )
+
+    async def _get_completed_task_or_404(self, task_id: int) -> Task:
+        """Получение выполненной задачи или возбуждение исключение с ошибкой 404"""
+        task = await self.task_repo.get(task_id)
+        if not (task and task.status == TaskStatus.COMPLETED):
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Выполненная задачи {task_id} не найдена"
+            )
+        return task
