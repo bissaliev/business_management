@@ -47,4 +47,4 @@ class BaseRepository(Generic[ModelType]):
     async def exists(self, reference: int) -> bool:
         stmt = select(exists().where(self.model.id == reference))
         result = await self.session.scalar(stmt)
-        return result
+        return bool(result)
