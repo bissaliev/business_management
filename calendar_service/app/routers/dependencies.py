@@ -8,15 +8,15 @@ from app.clients.user_client import UserServiceClient
 from app.config import settings
 from app.database import get_session
 from app.schemas.users import EmployeeRole, User
+from app.security import verify_api_key
 from app.services.calendar_service import CalendarService
 from app.services.event_service import EventService
 from app.services.event_webhook_service import EventWebhookService
-from app.security import verify_api_key
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f"{settings.URL_TOKEN}")
 
 
-async def event_service(session: Annotated[AsyncSession, Depends(get_session)]):
+async def event_service(session: Annotated[AsyncSession, Depends(get_session)]) -> EventService:
     """Функция для внедрения в зависимости сервис EventService"""
     return EventService(session)
 
@@ -24,7 +24,7 @@ async def event_service(session: Annotated[AsyncSession, Depends(get_session)]):
 EventServiceDeps = Annotated[EventService, Depends(event_service)]
 
 
-async def event_webhook_service(session: Annotated[AsyncSession, Depends(get_session)]):
+async def event_webhook_service(session: Annotated[AsyncSession, Depends(get_session)]) -> EventWebhookService:
     """Функция для внедрения в зависимости сервис EventWebhookService"""
     return EventWebhookService(session)
 
@@ -32,7 +32,7 @@ async def event_webhook_service(session: Annotated[AsyncSession, Depends(get_ses
 EventWebhookServiceDeps = Annotated[EventWebhookService, Depends(event_webhook_service)]
 
 
-async def calendar_service(session: Annotated[AsyncSession, Depends(get_session)]):
+async def calendar_service(session: Annotated[AsyncSession, Depends(get_session)]) -> CalendarService:
     """Функция для внедрения в зависимости сервис CalendarService"""
     return CalendarService(session)
 
