@@ -9,9 +9,9 @@ from app.repositories.base_repository import BaseRepository
 class TaskEvaluationRepository(BaseRepository):
     """Репозиторий для оценок задач"""
 
-    model = TaskEvaluation
+    model: type[TaskEvaluation] = TaskEvaluation
 
-    async def get_evaluations(self, employee_id: int):
+    async def get_evaluations(self, employee_id: int) -> list[TaskEvaluation]:
         """Получение записей оценок работников"""
         stmt = select(self.model).where(self.model.employee_id == employee_id)
         return (await self.session.scalars(stmt)).all()
@@ -38,4 +38,4 @@ class TaskEvaluationRepository(BaseRepository):
 
     async def exists_by_task_id(self, task_id: int) -> bool:
         stmt = select(exists().where(self.model.task_id == task_id))
-        return await self.session.scalar(stmt)
+        return bool(await self.session.scalar(stmt))
