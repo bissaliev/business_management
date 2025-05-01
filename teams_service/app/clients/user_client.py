@@ -2,6 +2,7 @@ import httpx
 from fastapi import HTTPException, status
 
 from app.config import settings
+from app.logging_config import logger
 from app.schemas.employees import UserResponse
 
 BASE_URL_USER_SERVICE = settings.get_user_url()
@@ -25,6 +26,7 @@ class UserServiceClient:
                     return response.json()
                 return {}
         except httpx.HTTPStatusError as e:
+            logger.error(f"Ошибка при запросе {e.request.url}: {e}")
             status_code = e.response.status_code
             detail = e.response.text
 
@@ -38,6 +40,7 @@ class UserServiceClient:
             ) from e
 
         except httpx.ConnectError as e:
+            logger.error(f"Сервис User service не доступен: {e}")
             raise HTTPException(
                 status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="User service недоступен"
             ) from e
@@ -59,17 +62,19 @@ class AuthClient:
     def __init__(self, base_url: str = BASE_URL_USER_SERVICE):
         self.base_url = base_url
 
-    async def _request(self, method: str, url: str, **kwargs) -> dict:
+    async def _request(self, method: str, url: str, **kwargs) -> dict | None:
         try:
             async with httpx.AsyncClient(timeout=httpx.Timeout(10.0, connect=5.0)) as client:
                 response = await client.request(method, url, **kwargs)
                 response.raise_for_status()
                 return response.json()
         except httpx.HTTPStatusError as e:
+            logger.error(f"Ошибка при запросе {e.request.url}: {e}")
             if method == "GET" and "/verify" in url:
                 raise HTTPException(status_code=e.response.status_code, detail="Invalid token or user") from e
             return None
         except httpx.ConnectError as e:
+            logger.error(f"Сервис User service не доступен: {e}")
             raise HTTPException(
                 status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Сервис User service не доступен"
             ) from e
