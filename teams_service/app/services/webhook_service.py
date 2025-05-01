@@ -1,6 +1,7 @@
 from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.logging_config import logger
 from app.models.teams import TeamEmployee
 from app.repositories.team_employee_repo import TeamEmployeeRepository
 from app.repositories.team_repo import TeamRepository
@@ -21,4 +22,6 @@ class WebHookService:
         if not team:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Неверный код")
         employee = await self.employee_repo.create(employee_id=data.employee_id, team_id=team.id)
+        await self.session.commit()
+        logger.info(f"Добавлен работник {data.employee_id} в команду {team.id}")
         return employee
