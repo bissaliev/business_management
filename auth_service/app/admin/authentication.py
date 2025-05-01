@@ -3,6 +3,7 @@ from starlette.requests import Request
 
 from app.config import settings
 from app.database import SessionLocal
+from app.logging_config import logger
 from app.services.auth_service import AuthService
 
 
@@ -17,6 +18,7 @@ class AdminAuth(AuthenticationBackend):
         async with SessionLocal() as session:
             service = self.auth_service(session)
             token = await service.login(email, password)
+        logger.info(f"Администратор {email} вошел в систему")
         request.session.update({"token": str(token.access_token)})
         return True
 
