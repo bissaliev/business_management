@@ -7,7 +7,7 @@ from app.repositories.base_repository import BaseRepository
 class CommentRepository(BaseRepository):
     """Репозиторий для пользователей"""
 
-    model = Comment
+    model: type[Comment] = Comment
 
     async def get_by_task_id(self, task_id: int) -> list[Comment]:
         """Получение комментариев по идентификатору задачи"""
