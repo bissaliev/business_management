@@ -7,7 +7,7 @@ from app.repositories.base_repository import BaseRepository
 class TeamNewsRepository(BaseRepository):
     """Репозиторий новостей команд"""
 
-    model = TeamNews
+    model: type[TeamNews] = TeamNews
 
     async def get_news_all(self, team_id) -> list[TeamNews]:
         """Получение новостей команды"""
@@ -46,6 +46,6 @@ class TeamNewsRepository(BaseRepository):
 
     async def exists_news(self, team_id: int, id: int) -> bool:
         """Удаление новости команды"""
-        stmt = select(exists(self.model).where(self.model.team_id == team_id, self.model.id == id))
+        stmt = select(exists().where(self.model.team_id == team_id, self.model.id == id))
         result = await self.session.scalar(stmt)
-        return result
+        return bool(result)
