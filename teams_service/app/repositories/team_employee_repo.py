@@ -7,7 +7,7 @@ from app.repositories.base_repository import BaseRepository
 class TeamEmployeeRepository(BaseRepository):
     """Репозиторий команд-сотрудников"""
 
-    model = TeamEmployee
+    model: type[TeamEmployee] = TeamEmployee
 
     async def get_team_employees(self, team_id: int) -> list[TeamEmployee]:
         """Получение сотрудников определенной команды"""
@@ -23,9 +23,9 @@ class TeamEmployeeRepository(BaseRepository):
 
     async def exists_employee_team(self, team_id: int, employee_id: int) -> bool:
         """Проверка на существование работника в команде"""
-        stmt = select(exists(self.model).where(self.model.team_id == team_id, self.model.employee_id == employee_id))
+        stmt = select(exists().where(self.model.team_id == team_id, self.model.employee_id == employee_id))
         result = await self.session.scalar(stmt)
-        return result
+        return bool(result)
 
     async def update_role(self, team_id: int, employee_id: int, role: dict) -> TeamEmployee:
         """Обновление роли работника команды"""
