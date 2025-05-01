@@ -1,4 +1,4 @@
-from typing import TypeVar
+from typing import Generic, TypeVar
 
 from sqlalchemy import exists, insert, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -8,7 +8,7 @@ from app.database import Base
 ModelType = TypeVar("ModelType", bound=Base)
 
 
-class BaseRepository:
+class BaseRepository(Generic[ModelType]):
     model: type[ModelType]
 
     def __init__(self, session: AsyncSession):
@@ -34,6 +34,6 @@ class BaseRepository:
         return result.scalar_one_or_none()
 
     async def exists(self, reference: int) -> bool:
-        stmt = select(exists(self.model).where(self.model.id == reference))
+        stmt = select(exists().where(self.model.id == reference))
         result = await self.session.execute(stmt)
-        return result.scalar()
+        return bool(result.scalar())
