@@ -7,7 +7,7 @@ from app.repositories.base_repository import BaseRepository
 class DepartmentRepository(BaseRepository):
     """Репозиторий для модели Department"""
 
-    model = Department
+    model: type[Department] = Department
 
     async def get_team_departments(self, team_id: int) -> list[Department]:
         """Получение департаментов определенной команды"""
