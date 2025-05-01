@@ -1,11 +1,9 @@
 import enum
-from datetime import datetime
-from zoneinfo import ZoneInfo
-
-from sqlalchemy import DateTime, Enum, String
-from sqlalchemy.orm import Mapped, mapped_column
+from datetime import datetime, timezone
 
 from app.database import Base
+from sqlalchemy import DateTime, Enum, String
+from sqlalchemy.orm import Mapped, mapped_column
 
 
 class EventType(enum.Enum):
@@ -29,6 +27,4 @@ class Event(Base):
     end_time: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     event_type: Mapped[EventType] = mapped_column(Enum(EventType))
     source_id: Mapped[int | None]
-    created_at: Mapped[datetime] = mapped_column(
-        default=lambda: datetime.now(ZoneInfo("UTC")), type_=DateTime(timezone=True)
-    )
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
