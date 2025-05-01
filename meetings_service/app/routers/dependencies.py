@@ -13,7 +13,7 @@ from app.services.meeting_service import MeetingService
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f"{settings.URL_TOKEN}")
 
 
-async def meeting_service(session: Annotated[AsyncSession, Depends(get_session)]):
+async def meeting_service(session: Annotated[AsyncSession, Depends(get_session)]) -> MeetingService:
     """Функция для внедрения в зависимости сервис MeetingService"""
     return MeetingService(session)
 
