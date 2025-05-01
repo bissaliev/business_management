@@ -6,14 +6,14 @@ from app.repositories.base_repository import BaseRepository
 
 
 class TeamStructureRepository(BaseRepository):
-    model = TeamStructure
+    model: type[TeamStructure] = TeamStructure
 
-    async def get(self, reference: int):
+    async def get(self, reference: int) -> TeamStructure | None:
         stmt = select(self.model).where(self.model.team_id == reference)
         result = await self.session.execute(stmt)
         return result.scalar_one_or_none()
 
-    async def get_with_relationship_upload(self, reference: int):
+    async def get_with_relationship_upload(self, reference: int) -> TeamStructure | None:
         """Запрос с загрузкой всех связанных отношений"""
         stmt = (
             select(TeamStructure)
@@ -37,7 +37,7 @@ class TeamStructureRepository(BaseRepository):
         team_structure = result.scalar_one_or_none()
         return team_structure
 
-    async def exists(self, reference):
-        stmt = select(exists(self.model).where(self.model.team_id == reference))
+    async def exists_team(self, team_id: int) -> bool:
+        stmt = select(exists().where(self.model.team_id == team_id))
         result = await self.session.execute(stmt)
-        return result.scalar()
+        return bool(result.scalar())
