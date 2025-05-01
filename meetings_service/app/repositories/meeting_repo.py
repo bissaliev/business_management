@@ -8,7 +8,7 @@ from app.repositories.base_repository import BaseRepository
 class MeetingRepository(BaseRepository):
     """Репозиторий для встреч"""
 
-    model = Meeting
+    model: type[Meeting] = Meeting
 
     async def list_meetings(self, employee_id: int, team_id: int | None = None) -> list[Meeting]:
         """Получение списка встреч с фильтрацией по идентификатору команды и идентификатору работника"""
