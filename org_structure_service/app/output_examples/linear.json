@@ -1,0 +1,39 @@
+{
+    "structure_type": "linear",
+    "hierarchy": {
+        "departments": [
+            {
+                "name": "Разработка",
+                "children": [],
+                "employees": [
+                    {
+                        "employee_id": 2,
+                        "role": "manager",
+                        "managers": []
+                    },
+                    {
+                        "employee_id": 1,
+                        "role": "developer",
+                        "managers": [
+                            2
+                        ]
+                    }
+                ]
+            }
+        ],
+        "employees": {
+            "1": {
+                "employee_id": 2,
+                "role": "manager",
+                "managers": []
+            },
+            "2": {
+                "employee_id": 1,
+                "role": "developer",
+                "managers": [
+                    2
+                ]
+            }
+        }
+    }
+}

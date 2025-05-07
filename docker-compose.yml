@@ -1,0 +1,132 @@
+services:
+    auth_db:
+        image: postgres
+        env_file:
+            - auth_service/.env
+        healthcheck:
+            test: ["CMD-SHELL", "pg_isready -U postgres"]
+            interval: 5s
+            timeout: 5s
+            retries: 5
+            start_period: 5s
+
+    auth_service:
+        build: ./auth_service
+        env_file:
+            - ./auth_service/.env
+        depends_on:
+            auth_db:
+                condition: service_healthy
+
+    team_db:
+        image: postgres
+        env_file:
+            - teams_service/.env
+        healthcheck:
+            test: ["CMD-SHELL", "pg_isready -U postgres"]
+            interval: 5s
+            timeout: 5s
+            retries: 5
+            start_period: 5s
+
+    teams_service:
+        build: ./teams_service
+        env_file:
+            - ./teams_service/.env
+
+        depends_on:
+            team_db:
+                condition: service_healthy
+
+    org_structure_db:
+        image: postgres
+        env_file:
+            - ./org_structure_service/.env
+        healthcheck:
+            test: ["CMD-SHELL", "pg_isready -U postgres"]
+            interval: 5s
+            timeout: 5s
+            retries: 5
+            start_period: 5s
+
+    org_structure_service:
+        build: ./org_structure_service
+        env_file:
+            - ./org_structure_service/.env
+
+        depends_on:
+            org_structure_db:
+                condition: service_healthy
+
+    tasks_db:
+        image: postgres
+        env_file:
+            - ./tasks_service/.env
+        healthcheck:
+            test: ["CMD-SHELL", "pg_isready -U postgres"]
+            interval: 5s
+            timeout: 5s
+            retries: 5
+            start_period: 5s
+
+    tasks_service:
+        build: ./tasks_service
+        env_file:
+            - ./tasks_service/.env
+
+        depends_on:
+            tasks_db:
+                condition: service_healthy
+
+    meeting_db:
+        image: postgres
+        env_file:
+            - ./meetings_service/.env
+        healthcheck:
+            test: ["CMD-SHELL", "pg_isready -U postgres"]
+            interval: 5s
+            timeout: 5s
+            retries: 5
+            start_period: 5s
+
+    meeting_service:
+        build: ./meetings_service
+        env_file:
+            - ./meetings_service/.env
+
+        depends_on:
+            meeting_db:
+                condition: service_healthy
+
+    calendar_db:
+        image: postgres
+        env_file:
+            - ./calendar_service/.env
+        healthcheck:
+            test: ["CMD-SHELL", "pg_isready -U postgres"]
+            interval: 5s
+            timeout: 5s
+            retries: 5
+            start_period: 5s
+
+    calendar_service:
+        build: ./calendar_service
+        env_file:
+            - ./calendar_service/.env
+
+        depends_on:
+            calendar_db:
+                condition: service_healthy
+
+    nginx:
+        image: nginx:latest
+        volumes:
+            - ./nginx/default.conf:/etc/nginx/nginx.conf
+        ports:
+            - "80:80"
+        depends_on:
+            - auth_service
+            - teams_service
+            - org_structure_service
+            - meeting_service
+            - calendar_service

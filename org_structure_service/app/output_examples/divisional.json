@@ -1,0 +1,79 @@
+{
+    "structure_type": "divisional",
+    "hierarchy": {
+        "divisions": [
+            {
+                "name": "Продукт A",
+                "departments": [
+                    {
+                        "name": "Разработка A",
+                        "children": [],
+                        "employees": [
+                            {
+                                "user_id": 2,
+                                "role": "manager",
+                                "managers": []
+                            },
+                            {
+                                "user_id": 1,
+                                "role": "developer",
+                                "managers": [
+                                    2
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "name": "Продукт B",
+                "departments": [
+                    {
+                        "name": "Разработка B",
+                        "children": [],
+                        "employees": [
+                            {
+                                "user_id": 3,
+                                "role": "manager",
+                                "managers": []
+                            },
+                            {
+                                "user_id": 4,
+                                "role": "developer",
+                                "managers": [
+                                    3
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "employees": {
+            "8": {
+                "user_id": 2,
+                "role": "manager",
+                "managers": []
+            },
+            "9": {
+                "user_id": 1,
+                "role": "developer",
+                "managers": [
+                    2
+                ]
+            },
+            "10": {
+                "user_id": 3,
+                "role": "manager",
+                "managers": []
+            },
+            "11": {
+                "user_id": 4,
+                "role": "developer",
+                "managers": [
+                    3
+                ]
+            }
+        }
+    }
+}

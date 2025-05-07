@@ -1,0 +1,25 @@
+# Для тестирования отдельного сервиса
+services:
+    team_db:
+        image: postgres
+        ports:
+            - "5434:5432"
+        env_file:
+            - ./.env
+        healthcheck:
+            test: ["CMD-SHELL", "pg_isready -U postgres"]
+            interval: 5s
+            timeout: 5s
+            retries: 5
+            start_period: 5s
+
+    teams_service:
+        build: .
+        env_file:
+            - ./.env
+        ports:
+            - "8002:8000"
+
+        depends_on:
+            team_db:
+                condition: service_healthy

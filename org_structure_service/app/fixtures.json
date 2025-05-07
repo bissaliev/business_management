@@ -1,0 +1,183 @@
+{
+    "team_structure": [
+        {
+            "team_id": 1,
+            "structure_type": "Линейная"
+        },
+        {
+            "team_id": 2,
+            "structure_type": "Функциональная"
+        },
+        {
+            "team_id": 3,
+            "structure_type": "Матричная"
+        },
+        {
+            "team_id": 4,
+            "structure_type": "Дивизиональная"
+        },
+        {
+            "team_id": 5,
+            "structure_type": "Линейно-функциональная"
+        }
+    ],
+    "divisions": [
+        {
+            "team_id": 4,
+            "name": "Продукт A"
+        },
+        {
+            "team_id": 4,
+            "name": "Продукт B"
+        }
+    ],
+    "departments": [
+        {
+            "team_id": 1,
+            "division_id": null,
+            "name": "Разработка",
+            "parent_id": null
+        },
+        {
+            "team_id": 2,
+            "division_id": null,
+            "name": "Разработка",
+            "parent_id": null
+        },
+        {
+            "team_id": 2,
+            "division_id": null,
+            "name": "Тестирование",
+            "parent_id": null
+        },
+        {
+            "team_id": 3,
+            "division_id": null,
+            "name": "Разработка",
+            "parent_id": null
+        },
+        {
+            "team_id": 4,
+            "division_id": 1,
+            "name": "Разработка A",
+            "parent_id": null
+        },
+        {
+            "team_id": 4,
+            "division_id": 2,
+            "name": "Разработка B",
+            "parent_id": null
+        },
+        {
+            "team_id": 5,
+            "division_id": null,
+            "name": "Разработка",
+            "parent_id": null
+        },
+        {
+            "team_id": 5,
+            "division_id": null,
+            "name": "Тестирование",
+            "parent_id": null
+        }
+    ],
+    "employee_structure": [
+        {
+            "employee_id": 2,
+            "department_id": 1,
+            "position": "manager",
+            "manager_id": null
+        },
+        {
+            "employee_id": 1,
+            "department_id": 1,
+            "position": "developer",
+            "manager_id": 2
+        },
+        {
+            "employee_id": 2,
+            "department_id": 2,
+            "position": "manager",
+            "manager_id": null
+        },
+        {
+            "employee_id": 1,
+            "department_id": 2,
+            "position": "developer",
+            "manager_id": 2
+        },
+        {
+            "employee_id": 3,
+            "department_id": 3,
+            "position": "tester",
+            "manager_id": null
+        },
+        {
+            "employee_id": 2,
+            "department_id": 4,
+            "position": "manager",
+            "manager_id": null
+        },
+        {
+            "employee_id": 1,
+            "department_id": 4,
+            "position": "developer",
+            "manager_id": 2
+        },
+        {
+            "employee_id": 2,
+            "department_id": 5,
+            "position": "manager",
+            "manager_id": null
+        },
+        {
+            "employee_id": 1,
+            "department_id": 5,
+            "position": "developer",
+            "manager_id": 2
+        },
+        {
+            "employee_id": 3,
+            "department_id": 6,
+            "position": "manager",
+            "manager_id": null
+        },
+        {
+            "employee_id": 4,
+            "department_id": 6,
+            "position": "developer",
+            "manager_id": 3
+        },
+        {
+            "employee_id": 2,
+            "department_id": 7,
+            "position": "manager",
+            "manager_id": null
+        },
+        {
+            "employee_id": 1,
+            "department_id": 7,
+            "position": "developer",
+            "manager_id": 2
+        },
+        {
+            "employee_id": 3,
+            "department_id": 8,
+            "position": "manager",
+            "manager_id": null
+        },
+        {
+            "employee_id": 4,
+            "department_id": 8,
+            "position": "tester",
+            "manager_id": 3
+        }
+    ],
+    "employee_managers": [
+        {
+            "employee_structure_id": 7,
+            "manager_id": 3,
+            "context": "project"
+        }
+    ]
+}

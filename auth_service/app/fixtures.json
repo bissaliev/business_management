@@ -1,0 +1,55 @@
+[
+    {
+        "name": "admin",
+        "email": "admin@admin.com",
+        "status": "админ",
+        "password": "admin",
+        "is_active": true,
+        "deleted_at": null,
+        "team_id": 1
+    },
+    {
+        "name": "Иван Иванов",
+        "email": "ivan.ivanov@example.com",
+        "status": "пользователь",
+        "password": "password",
+        "is_active": true,
+        "deleted_at": null,
+        "team_id": 1
+    },
+    {
+        "name": "Анна Петрова",
+        "email": "anna.petrova@example.com",
+        "status": "админ",
+        "password": "password",
+        "is_active": true,
+        "deleted_at": null,
+        "team_id": 1
+    },
+    {
+        "name": "Пётр Сидоров",
+        "email": "petr.sidorov@example.com",
+        "status": "пользователь",
+        "password": "password",
+        "is_active": true,
+        "deleted_at": null,
+        "team_id": 1
+    },
+    {
+        "name": "Мария Кузнецова",
+        "email": "maria.kuznetsova@example.com",
+        "status": "пользователь",
+        "password": "password",
+        "is_active": false,
+        "team_id": 1
+    },
+    {
+        "name": "Алексей Смирнов",
+        "email": "alexey.smirnov@example.com",
+        "status": "админ",
+        "password": "password",
+        "is_active": true,
+        "deleted_at": null,
+        "team_id": 1
+    }
+]
