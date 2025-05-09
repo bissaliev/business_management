@@ -1,10 +1,11 @@
 from typing import Annotated
 
-from fastapi import Depends, HTTPException, Path, status
+from fastapi import Depends, HTTPException, Path, Request, status
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.clients.rabbitmq.event_publisher import EventPublisher
 from app.clients.user_client import UserServiceClient
 from app.config import settings
 from app.database import get_session
@@ -17,9 +18,18 @@ from app.services.task_service import TaskService
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl=settings.URL_TOKEN)
 
 
-async def task_service(session: Annotated[AsyncSession, Depends(get_session)]) -> TaskService:
+def rqm_producer(request: Request) -> EventPublisher:
+    return request.app.rqm_producer
+
+
+EventPublisherDeps = Annotated[EventPublisher, Depends(rqm_producer)]
+
+
+async def task_service(
+    session: Annotated[AsyncSession, Depends(get_session)], rqm_producer: EventPublisherDeps
+) -> TaskService:
     """Функция для внедрения в зависимости сервис TaskService"""
-    return TaskService(session)
+    return TaskService(session=session, rmq_producer=rqm_producer)
 
 
 TaskServiceDeps = Annotated[TaskService, Depends(task_service)]
