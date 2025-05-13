@@ -1,4 +1,6 @@
-from collections.abc import AsyncIterator
+from collections.abc import AsyncIterator, Awaitable
+from functools import wraps
+from typing import Any, Callable
 
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
@@ -28,3 +30,19 @@ async def get_session() -> AsyncIterator[AsyncSession]:
             logger.error(f"Ошибка в сеансе БД: {str(e)}", exc_info=True)
             await session.rollback()
             raise
+
+
+def context_session(func: Callable[..., Awaitable[Any]]) -> Callable[..., Awaitable[Any]]:
+    @wraps(func)
+    async def wrapper(*args, **kwargs):
+        async with SessionLocal() as session:
+            try:
+                result = await func(*args, session=session, **kwargs)
+                await session.commit()
+                return result
+            except SQLAlchemyError as e:
+                await session.rollback()
+                logger.error(f"Ошибка в сеансе БД: {str(e)}", exc_info=True)
+                raise
+
+    return wrapper
