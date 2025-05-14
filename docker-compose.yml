@@ -77,6 +77,8 @@ services:
         depends_on:
             tasks_db:
                 condition: service_healthy
+            rabbitmq:
+                condition: service_healthy
 
     meeting_db:
         image: postgres
@@ -117,6 +119,8 @@ services:
         depends_on:
             calendar_db:
                 condition: service_healthy
+            rabbitmq:
+              condition: service_healthy
 
     nginx:
         image: nginx:latest
@@ -130,3 +134,17 @@ services:
             - org_structure_service
             - meeting_service
             - calendar_service
+
+    rabbitmq:
+        image: rabbitmq:3.13-management
+        ports:
+          - "5672:5672"
+          - "15672:15672"
+        environment:
+          RABBITMQ_DEFAULT_USER: guest
+          RABBITMQ_DEFAULT_PASS: guest
+        healthcheck:
+          test: ["CMD", "rabbitmq-diagnostics", "ping"]
+          interval: 10s
+          timeout: 5s
+          retries: 5

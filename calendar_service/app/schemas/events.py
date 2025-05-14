@@ -16,6 +16,15 @@ class EventCreate(BaseModel):
     event_type: EventType = EventType.PERSONAL
 
 
+class EventCreateMessage(EventCreate):
+    """Создание события"""
+
+    source_id: int
+    employee_id: int
+
+    model_config = {"from_attributes": True}
+
+
 class EventUpdate(BaseModel):
     """Обновление события"""
 

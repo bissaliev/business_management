@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import delete, exists, select
+from sqlalchemy import delete, exists, select, update
 
 from app.logging_config import logger
 from app.models.events import Event
@@ -31,6 +31,25 @@ class EventRepository(BaseRepository):
             self.model.source_id == source_id,
             self.model.event_type == event_type,
             self.model.employee_id == employee_id,
+        )
+        result = await self.session.execute(stmt)
+        await self.session.commit()
+        logger.info(f"Успешно удаленно {result.rowcount} записи из {self.model.__name__}")
+
+    async def update_by_source(self, source_id: int, event_type: str, employee_id: int, **update_data) -> None:
+        """Обновление события по source_id, event_type, employee_id"""
+        logger.info(
+            f"Удаление события с идентификатором источника={source_id}, "
+            f"типом события={event_type}, идентификатором сотрудника={employee_id}"
+        )
+        stmt = (
+            update(self.model)
+            .where(
+                self.model.source_id == source_id,
+                self.model.event_type == event_type,
+                self.model.employee_id == employee_id,
+            )
+            .values(**update_data)
         )
         result = await self.session.execute(stmt)
         await self.session.commit()

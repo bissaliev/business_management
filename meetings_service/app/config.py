@@ -21,6 +21,8 @@ class Setting(BaseSettings):
     CALENDAR_PORT: str
     API_KEY_CALENDAR: str
 
+    RABBITMQ_URL: str
+
     LOG_DIR: Path = Path(__file__).parent.parent / "logs"
     LOG_DIR.mkdir(parents=True, exist_ok=True)
 

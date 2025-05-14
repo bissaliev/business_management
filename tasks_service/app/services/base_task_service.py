@@ -12,7 +12,8 @@ from app.schemas.users import User
 class BaseTaskService:
     """Базовый Сервис для управления задачами"""
 
-    def __init__(self, session: AsyncSession):
+    def __init__(self, /, session: AsyncSession, **kwargs):
+        super().__init__(**kwargs)
         self.session = session
         self.repo = TaskRepository(session)
         self.team_client = TeamServiceClient()

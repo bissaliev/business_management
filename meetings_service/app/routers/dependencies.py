@@ -1,9 +1,10 @@
 from typing import Annotated
 
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.clients.rabbitmq.event_publisher import EventPublisher
 from app.clients.user_client import UserServiceClient
 from app.config import settings
 from app.database import get_session
@@ -13,9 +14,20 @@ from app.services.meeting_service import MeetingService
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f"{settings.URL_TOKEN}")
 
 
-async def meeting_service(session: Annotated[AsyncSession, Depends(get_session)]) -> MeetingService:
+def rqm_producer(request: Request) -> EventPublisher:
+    return request.app.rmq_producer
+
+
+EventPublisherDeps = Annotated[EventPublisher, Depends(rqm_producer)]
+
+
+async def meeting_service(
+    session: Annotated[AsyncSession, Depends(get_session)], rmq_producer: EventPublisherDeps
+) -> MeetingService:
     """Функция для внедрения в зависимости сервис MeetingService"""
-    return MeetingService(session)
+    service = MeetingService(session)
+    service.add_producer(rmq_producer)
+    return service
 
 
 MeetingServiceDeps = Annotated[MeetingService, Depends(meeting_service)]

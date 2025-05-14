@@ -17,9 +17,10 @@ class Setting(BaseSettings):
     DB_PORT: str
     URL_TOKEN: str
     MEETING_API_KEY: str
-    TASK_API_KEY: str
     LOG_DIR: Path = Path(__file__).parent.parent / "logs"
     LOG_DIR.mkdir(parents=True, exist_ok=True)
+
+    RABBITMQ_URL: str
 
     model_config = SettingsConfigDict(env_file=".env")
 
